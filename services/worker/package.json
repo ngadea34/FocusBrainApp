@@ -10,7 +10,8 @@
     "@app/contracts": "workspace:*",
     "@app/pipeline": "workspace:*",
     "pg": "^8.23.1",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "@app/research": "workspace:*"
   },
   "devDependencies": {
     "@types/pg": "^8.23.1"

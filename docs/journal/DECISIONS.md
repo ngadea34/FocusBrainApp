@@ -22,4 +22,7 @@ Format : date · décision · statut (Validée / Technique réversible / En atte
 | D1 | 2026-11-19 | Dépôt GitHub `ngadea34/FocusBrainApp` | Validée (Nico) | Créé par Nico |
 | D2 | 2026-11-19 | Projet Supabase de dev « FocusBrainApp » créé par Nico, région eu-north-1 (Stockholm, UE), PostgreSQL 17 | Validé (créé par Nico) | Hébergement UE exigé par le dossier ; Stockholm au lieu de Francfort/Paris, toujours dans l'UE |
 | D4 (dev) | 2026-11-19 | Modèle local Qwen3 8B via Ollama sur le PC de Nico (RTX 2060 8 Go, 64 Go RAM) ; 0 € | Validé par Nico (« on va faire ça sur ma rtx 2060 ») | Nico refuse toute dépense IA ; offre gratuite Mistral sans API (vérifié sur sa console), Gemini gratuit apparemment indisponible en UE. Qualité inférieure aux grands modèles : à réévaluer avant la bêta (D4 production) |
+| T14 | 2026-11-19 | Seuls les textes sous CC0 / domaine public / CC BY / CC BY-SA sont transmis au modèle ; licence inconnue = fermée | Technique (brief §5) | Règle prudente par défaut, testée |
+| T15 | 2026-11-19 | Rang de fiabilité dérivé du type de preuve uniquement, jamais des citations | Technique (brief §4) | Testé |
 | D5–D8 | 2026-11-19 | Voir docs/AUDIT.md §9 | En attente | Arbitrages du propriétaire |
+| D9 | 2026-11-19 | Validation juridique de la politique de licences ; la vérification peut-elle lire un résumé fermé sans le reproduire ? | En attente (juriste) | Option `verificationMayReadRestricted`, désactivée par défaut |

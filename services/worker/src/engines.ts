@@ -1,5 +1,6 @@
-import { claimPresentation, outlineSchema, SOURCE_TIER, type Outline } from "@app/contracts";
-import { buildSegments, MAX_REWRITES, type LlmProvider, type LlmRequest, type SearchProvider, type UsageRecord } from "@app/pipeline";
+import { claimPresentation, outlineSchema, type Outline } from "@app/contracts";
+import { buildSegments, MAX_REWRITES, type LlmProvider, type LlmRequest, type UsageRecord } from "@app/pipeline";
+import { canonicalKey, type EvidenceLevel, type ResearchDocument, type ResearchService } from "@app/research";
 import { createHash } from "node:crypto";
 import type pg from "pg";
 import { z } from "zod";
@@ -16,7 +17,17 @@ import { PermanentError, type HandlerResult, type Handlers, type StepHandler } f
 export interface EngineDeps {
   pool: pg.Pool;
   llm: LlmProvider;
-  search: SearchProvider;
+  /** Moteur documentaire (connecteurs indépendants, voir packages/research). */
+  research: ResearchService;
+  /** Nombre maximal de documents conservés par épisode après déduplication. */
+  maxSources?: number;
+  /**
+   * La vérification peut-elle lire les résumés dont la licence n'autorise pas la réutilisation ?
+   * false par défaut (prudent) : décision juridique en attente (D9).
+   */
+  verificationMayReadRestricted?: boolean;
+  /** Sources indépendantes consultées en plus de la source citée, par affirmation. */
+  maxIndependentChecks?: number;
 }
 
 interface EpisodeRow {
@@ -99,56 +110,91 @@ export function intentHandler(d: EngineDeps): StepHandler {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Recherche : sources réelles, enregistrées avec leur extrait
+// 2. Recherche : moteur documentaire multi-sources, métadonnées et licences tracées
 // ---------------------------------------------------------------------------
+const EVIDENCE_TO_KIND: Record<EvidenceLevel, string> = {
+  institutional_guideline: "public_institution", systematic_review: "systematic_review", peer_reviewed_study: "scientific_article",
+  primary_study: "scientific_article", preprint: "other", educational: "university", encyclopedic: "other", unknown: "other",
+};
+
 export function researchHandler(d: EngineDeps): StepHandler {
   return async (step, _job, signal) => {
     const intent = await stepOutput<z.infer<typeof intentSchema>>(d.pool, step.job_id, "intent");
-    const usage: UsageRecord[] = [];
-    const seen = new Set<string>();
-    let kept = 0;
-    for (const q of intent.queries) {
-      const r = await d.search.search(q.query, q.locale, signal);
-      usage.push(...r.usage);
-      for (const h of r.hits) {
-        const key = `url:${normalizeUrl(h.url)}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        const { rows: [s] } = await d.pool.query<{ id: string }>(
-          `insert into public.sources (kind, title, publisher, original_locale, url, canonical_key, metadata, published_on)
-           values ('other', $1, $2, $3, $4, $5, jsonb_build_object('extract', $6::text, 'provider', $7::text), $8)
-           on conflict (canonical_key) do update set metadata = excluded.metadata, retrieved_at = now()
-           returning id`,
-          [h.title.slice(0, 500), d.search.id === "wikipedia" ? "Wikipédia" : null, h.locale ?? q.locale, h.url, key,
-           h.snippet, d.search.id, h.publishedOn ?? null]);
-        await d.pool.query(
-          `insert into public.episode_sources (episode_id, user_id, source_id, quality_tier, limitations)
-           values ($1, $2, $3, $4, $5) on conflict (episode_id, source_id) do nothing`,
-          [step.episode_id, step.user_id, s!.id, SOURCE_TIER.other,
-           d.search.id === "wikipedia" ? "Encyclopédie collaborative (source tertiaire) : à recouper avec des sources primaires." : null]);
-        kept++;
-      }
+    const report = await d.research.search(intent.queries, signal);
+    const docs = report.documents.slice(0, d.maxSources ?? 15);
+    for (const doc of docs) {
+      const id = await upsertSource(d.pool, doc);
+      await d.pool.query(
+        `insert into public.episode_sources (episode_id, user_id, source_id, quality_tier, limitations, evaluation)
+         values ($1, $2, $3, $4, $5, $6) on conflict (episode_id, source_id) do nothing`,
+        [step.episode_id, step.user_id, id, doc.reliabilityTier, limitations(doc),
+         JSON.stringify({ evidenceLevel: doc.evidenceLevel, providers: doc.providers })]);
     }
-    if (!kept) throw new PermanentError("no_sources_found");
-    return { output: { sources: kept }, usage };
+    if (!docs.length) throw new PermanentError("no_sources_found");
+    const usage: UsageRecord[] = Object.keys(report.connectors).map((c) => ({
+      category: "research" as const, provider: c, units: intent.queries.length, unit: "queries", amountMicros: 0,
+    }));
+    return { output: { sources: docs.length, connectors: report.connectors }, usage };
   };
 }
 
-function normalizeUrl(u: string): string {
-  const url = new URL(u);
-  url.hash = "";
-  return url.toString().replace(/\/$/, "");
+function limitations(doc: ResearchDocument): string | null {
+  const notes: string[] = [];
+  if (doc.evidenceLevel === "encyclopedic") notes.push("Source encyclopédique (tertiaire) : à recouper.");
+  if (doc.publicationStatus === "preprint") notes.push("Prépublication non relue par les pairs.");
+  if (!doc.license.allowedForGeneration) notes.push(`Licence ${doc.license.code} : texte non transmis au modèle, métadonnées seulement.`);
+  return notes.join(" ") || null;
 }
 
-interface SourceRow { id: string; title: string; extract: string; locale: string | null }
+async function upsertSource(pool: pg.Pool, doc: ResearchDocument): Promise<string> {
+  const pubDate = /^\d{4}(-\d{2}(-\d{2})?)?$/.test(doc.publicationDate ?? "") ? doc.publicationDate : doc.publicationDate?.slice(0, 4) ?? null;
+  const { rows: [s] } = await pool.query<{ id: string }>(
+    `insert into public.sources (kind, title, authors, publisher, original_locale, url, doi, canonical_key, metadata,
+        source_provider, providers, publication_date, pmid, pmcid, hal_id, wikidata_id, abstract, document_type, language,
+        license_raw, license_code, license_allows_generation, peer_review_status, publication_status, evidence_level,
+        reliability_tier, citation, retrieved_at)
+     values ($1::public.source_kind, $2, $3, null, null, $4, $5, $6, '{}'::jsonb, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+             $17, $18, $19, $20, $21, $22, $23, $24, $25)
+     on conflict (canonical_key) do update set
+        providers = (select array(select distinct unnest(public.sources.providers || excluded.providers))),
+        abstract = coalesce(excluded.abstract, public.sources.abstract),
+        license_raw = excluded.license_raw, license_code = excluded.license_code,
+        license_allows_generation = excluded.license_allows_generation,
+        publication_status = excluded.publication_status, evidence_level = excluded.evidence_level,
+        reliability_tier = excluded.reliability_tier, citation = excluded.citation, retrieved_at = excluded.retrieved_at
+     returning id`,
+    [EVIDENCE_TO_KIND[doc.evidenceLevel], doc.title, doc.authors, doc.url ?? (doc.ids.doi ? `https://doi.org/${doc.ids.doi}` : `urn:${canonicalKey(doc)}`),
+     doc.ids.doi ?? null, canonicalKey(doc), doc.sourceProvider, doc.providers, pubDate, doc.ids.pmid ?? null, doc.ids.pmcid ?? null,
+     doc.ids.halId ?? null, doc.ids.wikidata ?? null, doc.abstract, doc.documentType, doc.language, doc.license.raw, doc.license.code,
+     doc.license.allowedForGeneration, doc.peerReviewStatus, doc.publicationStatus, doc.evidenceLevel, doc.reliabilityTier, doc.citation,
+     doc.retrievalDate]);
+  return s!.id;
+}
 
-async function retainedSources(pool: pg.Pool, episodeId: string, onlyRetained = true): Promise<SourceRow[]> {
+interface SourceRow {
+  id: string; title: string; citation: string | null; evidence_level: string; tier: number;
+  /** Texte transmissible : null si la licence ne permet pas la réutilisation (brief §5). */
+  content: string | null;
+  /** Texte lisible pour la vérification (selon la politique de licence). */
+  checkable: string | null;
+  locale: string | null;
+}
+
+async function retainedSources(pool: pg.Pool, episodeId: string, onlyRetained = true, readRestricted = false): Promise<SourceRow[]> {
   const { rows } = await pool.query<SourceRow>(
-    `select s.id, s.title, coalesce(s.metadata->>'extract', '') as extract, s.original_locale as locale
+    `select s.id, s.title, s.citation, s.evidence_level, es.quality_tier as tier, s.language as locale,
+            case when s.license_allows_generation then s.abstract end as content,
+            case when s.license_allows_generation or $3::boolean then s.abstract end as checkable
        from public.episode_sources es join public.sources s on s.id = es.source_id
       where es.episode_id = $1 and ($2::boolean is false or es.retained)
-      order by es.relevance_score desc nulls last, s.title`, [episodeId, onlyRetained]);
+      order by es.quality_tier, es.relevance_score desc nulls last, s.title`, [episodeId, onlyRetained, readRestricted]);
   return rows;
+}
+
+/** Ce que le modèle de génération voit d'une source : texte autorisé, sinon la référence seule. */
+function sourceForModel(s: SourceRow, max: number): string {
+  const head = `${s.citation ?? s.title} [${s.evidence_level}]`;
+  return s.content ? `${head}\n${s.content.slice(0, max)}` : `${head}\n(texte non réutilisable : référence seulement)`;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,13 +205,13 @@ const evalSchema = z.object({ relevance: z.number().min(0).max(1), note: z.strin
 export function evaluateSourcesHandler(d: EngineDeps): StepHandler {
   return async (step, _job, signal) => {
     const e = await episode(d.pool, step);
-    const sources = await retainedSources(d.pool, step.episode_id, false);
+    const sources = await retainedSources(d.pool, step.episode_id, false, d.verificationMayReadRestricted ?? false);
     const usage: UsageRecord[] = [];
     let retained = 0;
     for (const s of sources) {
       const r = await askJson(d.llm, {
         purpose: "evaluate_sources", system: BASE_SYSTEM, maxOutputTokens: 200,
-        untrusted: [{ label: "sujet", content: e.topic_prompt }, { label: "source", content: `${s.title}\n${s.extract.slice(0, 1500)}` }],
+        untrusted: [{ label: "sujet", content: e.topic_prompt }, { label: "source", content: sourceForModel(s, 1500) }],
         instruction: 'Note de 0 à 1 la pertinence de cette source pour le sujet. JSON : {"relevance": number, "note": string}',
         jsonSchema: z.toJSONSchema(evalSchema) as Record<string, unknown>,
       }, evalSchema, usage, signal);
@@ -195,7 +241,7 @@ export function outlineHandler(d: EngineDeps): StepHandler {
       purpose: "outline", system: BASE_SYSTEM, maxOutputTokens: 1200,
       untrusted: [
         { label: "sujet", content: e.topic_prompt },
-        ...sources.map((s, i) => ({ label: `source${i + 1}`, content: `${s.title}\n${s.extract.slice(0, 800)}` })),
+        ...sources.map((s, i) => ({ label: `source${i + 1}`, content: sourceForModel(s, 800) })),
       ],
       instruction:
         `Propose le plan d'un épisode de ${minutes} minutes en ${languageName(e.output_locale)}, ` +
@@ -249,7 +295,7 @@ export function writeHandler(d: EngineDeps): StepHandler {
         purpose: "write", system: BASE_SYSTEM, maxOutputTokens: Math.min(4000, Math.round(words * 2.2) + 300),
         untrusted: [
           { label: "sujet", content: e.topic_prompt },
-          ...sources.map((s, i) => ({ label: `source${i + 1}`, content: s.extract.slice(0, 1200) })),
+          ...sources.map((s, i) => ({ label: `source${i + 1}`, content: sourceForModel(s, 1200) })),
           ...(rejected.length ? [{ label: "affirmations_rejetees", content: rejected.join("\n") }] : []),
         ],
         instruction:
@@ -322,26 +368,54 @@ const verdictSchema = z.object({
   rationale: z.string().max(500).default(""),
 });
 
+type Verdict = z.infer<typeof verdictSchema>["status"];
+
+/**
+ * Combine les avis de plusieurs sources indépendantes (brief §4).
+ * - une contradiction sans confirmation : rejetée ;
+ * - confirmation ET contradiction : « nuancée », contradiction signalée ;
+ * - au moins une confirmation avec citation exacte : confirmée ;
+ * - sinon « nuancée » si une source l'appuie en partie, « non vérifiée » faute de preuve suffisante.
+ */
+export function aggregateVerdicts(vs: readonly { status: Verdict; tier: number; title: string }[]): { status: Verdict; rationale: string; contradiction: boolean } {
+  const by = (st: Verdict) => vs.filter((v) => v.status === st);
+  const confirmed = by("confirmed"), contra = by("rejected"), nuanced = by("nuanced");
+  const names = (xs: typeof vs) => xs.map((x) => x.title.replace(/\.+$/, "")).join(" ; ").slice(0, 200);
+  if (contra.length && confirmed.length) {
+    return { status: "nuanced", contradiction: true, rationale: `Sources en désaccord. Pour : ${names(confirmed)}. Contre : ${names(contra)}.` };
+  }
+  if (contra.length) return { status: "rejected", contradiction: false, rationale: `Contredite par : ${names(contra)}.` };
+  if (confirmed.length) return { status: "confirmed", contradiction: false, rationale: `Confirmée par ${confirmed.length} source(s) : ${names(confirmed)}.` };
+  if (nuanced.length) return { status: "nuanced", contradiction: false, rationale: `Appui partiel : ${names(nuanced)}.` };
+  return { status: "unverified", contradiction: false, rationale: vs.length ? "Aucune source consultée n'en parle : preuve insuffisante." : "Aucune source lisible (licence) pour vérifier." };
+}
+
+const localeOrNull = (l: string | null) => (l && /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(l) ? l : null);
+
 export function verifyHandler(d: EngineDeps): StepHandler {
   return async (step, _job, signal): Promise<HandlerResult> => {
     const e = await episode(d.pool, step);
-    const { rows: claims } = await d.pool.query<{ id: string; text: string; source_id: string | null; extract: string | null; locale: string | null }>(
-      `select c.id, c.text, ev.source_id, s.metadata->>'extract' as extract, s.original_locale as locale
+    const { rows: claims } = await d.pool.query<{ id: string; text: string; source_id: string | null }>(
+      `select c.id, c.text, ev.source_id
          from public.claims c
          join public.episodes ep on ep.id = c.episode_id
          join public.script_sections sec on sec.id = c.section_id and sec.script_version_id = ep.current_script_version_id
-         left join lateral (select source_id from public.claim_evidence where claim_id = c.id limit 1) ev on true
-         left join public.sources s on s.id = ev.source_id
+         left join lateral (select source_id from public.claim_evidence where claim_id = c.id order by created_at limit 1) ev on true
         where c.episode_id = $1 and c.checked_at is null`, [step.episode_id]);
+    const pool = await retainedSources(d.pool, step.episode_id, true, d.verificationMayReadRestricted ?? false);
     const usage: UsageRecord[] = [];
     let rejected = 0;
+    let contradictions = 0;
     for (const cl of claims) {
-      let status: z.infer<typeof verdictSchema>["status"] = "unverified";
-      let rationale = "Aucune source rattachée.";
-      if (cl.extract) {
+      // Source citée par le rédacteur + sources indépendantes les plus fiables (brief §4 : fact checker).
+      const cited = pool.find((p) => p.id === cl.source_id);
+      const others = pool.filter((p) => p.id !== cl.source_id && p.checkable).slice(0, d.maxIndependentChecks ?? 2);
+      const verdicts: { source: SourceRow; status: Verdict; quoteOk: boolean; quote: string; rationale: string }[] = [];
+      for (const src of [cited, ...others]) {
+        if (!src?.checkable) continue;
         const v = await askJson(d.llm, {
           purpose: "verify", system: BASE_SYSTEM, maxOutputTokens: 400,
-          untrusted: [{ label: "affirmation", content: cl.text }, { label: "source", content: cl.extract.slice(0, 3000) }],
+          untrusted: [{ label: "affirmation", content: cl.text }, { label: "source", content: src.checkable.slice(0, 3000) }],
           instruction:
             "La source confirme-t-elle l'affirmation ? confirmed = dit explicitement ; nuanced = en partie ou avec réserves ; " +
             "unverified = n'en parle pas ; rejected = la contredit. Cite le passage exact de la source qui justifie ta réponse. " +
@@ -349,16 +423,26 @@ export function verifyHandler(d: EngineDeps): StepHandler {
           jsonSchema: z.toJSONSchema(verdictSchema) as Record<string, unknown>,
         }, verdictSchema, usage, signal);
         // Une citation n'est conservée que si elle figure vraiment dans la source.
-        const quoteOk = v.quote.length > 10 && cl.extract.includes(v.quote.trim());
-        status = v.status === "confirmed" && !quoteOk ? "nuanced" : v.status;
-        rationale = v.rationale;
-        await d.pool.query(
-          `update public.claim_evidence set support = $2, quote_original = $3, quote_locale = $4
-            where claim_id = $1 and source_id = $5`,
-          [cl.id, status === "rejected" ? "contradicts" : status === "confirmed" ? "supports" : "qualifies",
-           quoteOk ? v.quote.trim() : null, quoteOk ? cl.locale : null, cl.source_id]);
+        const quoteOk = v.quote.trim().length > 10 && src.checkable.includes(v.quote.trim());
+        verdicts.push({ source: src, status: v.status === "confirmed" && !quoteOk ? "nuanced" : v.status, quoteOk, quote: v.quote.trim(), rationale: v.rationale });
       }
+      const { status, rationale, contradiction } = aggregateVerdicts(verdicts.map((v) => ({ status: v.status, tier: v.source.tier, title: v.source.citation ?? v.source.title })));
+      if (contradiction) contradictions++;
       if (status === "rejected") rejected++;
+      for (const v of verdicts) {
+        if (v.status === "unverified" && v.source.id !== cl.source_id) continue; // pas de trace pour une source muette
+        const support = v.status === "rejected" ? "contradicts" : v.status === "confirmed" ? "supports" : "qualifies";
+        const quote = v.quoteOk ? v.quote : null;
+        const updated = await d.pool.query(
+          `update public.claim_evidence set support = $3, quote_original = $4, quote_locale = $5
+            where claim_id = $1 and source_id = $2`, [cl.id, v.source.id, support, quote, quote ? localeOrNull(v.source.locale) : null]);
+        if (!updated.rowCount) {
+          await d.pool.query(
+            `insert into public.claim_evidence (claim_id, episode_id, user_id, source_id, support, quote_original, quote_locale)
+             values ($1, $2, $3, $4, $5, $6, $7)`,
+            [cl.id, step.episode_id, step.user_id, v.source.id, support, quote, quote ? localeOrNull(v.source.locale) : null]);
+        }
+      }
       await d.pool.query("update public.claims set status = $2, rationale = $3, checked_at = now() where id = $1",
         [cl.id, status, rationale.slice(0, 500)]);
     }
@@ -367,7 +451,7 @@ export function verifyHandler(d: EngineDeps): StepHandler {
       "select count(*) as n from public.generation_steps where job_id = $1 and step_type = 'write' and step_key like 'rewrite-%'", [step.job_id]);
     const done = Number(rewrites.rows[0]!.n);
     if (rejected > 0 && done < MAX_REWRITES) {
-      return { output: { checked: claims.length, rejected }, usage, outcome: { rewriteNeeded: true, rewrites: done } };
+      return { output: { checked: claims.length, rejected, contradictions }, usage, outcome: { rewriteNeeded: true, rewrites: done } };
     }
 
     // Script final : les phrases rejetées restantes sont retirées (règle documentaire).
@@ -391,7 +475,7 @@ export function verifyHandler(d: EngineDeps): StepHandler {
     if (!segments.length) throw new PermanentError("empty_script");
     const keys = segments.map((s) => `${String(s.index).padStart(4, "0")}-${s.key.slice(0, 12)}`);
     return {
-      output: { checked: claims.length, rejected, removed: finalRejected.length, segments: segments.length },
+      output: { checked: claims.length, rejected, contradictions, removed: finalRejected.length, segments: segments.length },
       usage,
       outcome: { rewriteNeeded: false, rewrites: done, segmentKeys: keys },
       nextInputs: Object.fromEntries(segments.map((s, i) => [keys[i]!, {
