@@ -33,6 +33,11 @@ export class SupabaseStore implements AudioStore {
     });
   }
 
+  async get(path: string): Promise<Uint8Array> {
+    const res = await this.call(`/object/${this.bucket}/${encodePath(path)}`, { method: "GET" });
+    return new Uint8Array(await res.arrayBuffer());
+  }
+
   async remove(paths: readonly string[]): Promise<void> {
     for (let i = 0; i < paths.length; i += 1000) {
       await this.call(`/object/${this.bucket}`, {

@@ -2,7 +2,7 @@
   "name": "brainfocus-app",
   "private": true,
   "type": "module",
-  "description": "Podcasts personnalisés — monorepo (nom provisoire)",
+  "description": "Podcasts personnalis\u00e9s \u2014 monorepo (nom provisoire)",
   "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=22.13"
@@ -13,7 +13,8 @@
     "test:db": "bash supabase/tests/run.sh && vitest run --config vitest.db.config.ts",
     "test:remote": "bash supabase/tests/remote/run.sh",
     "test:live": "NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1 vitest run --config vitest.live.config.ts",
-    "research:demo": "NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1 vitest run --config vitest.live.config.ts tools/research-demo"
+    "research:demo": "NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1 vitest run --config vitest.live.config.ts tools/research-demo",
+    "worker": "pnpm --filter @app/worker start"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

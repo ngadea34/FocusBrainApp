@@ -7,3 +7,6 @@ export * from "./supabase-store.js";
 export * from "./storage-cleanup.js";
 export * from "./providers/ollama.js";
 export * from "./engines.js";
+export * from "./assemble.js";
+export * from "./loop.js";
+export * from "./config.js";

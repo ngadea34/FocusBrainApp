@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 2026-11-19 — Worker en continu et montage
+- Étape « assemblage » réelle : un seul MP3 par épisode, avec chapitres et durée ; l'app le lit à la place des segments.
+- `pnpm worker` : boucle continue, arrêt propre au Ctrl+C, reprise après coupure de la base, maintenance toutes les 60 s (étapes abandonnées, fichiers des comptes supprimés).
+- Configuration par `services/worker/.env` (modèle : `.env.example`), mode d'emploi dans `services/worker/README.md`.
+
 ## 2026-11-19 — Application mobile, première version
 - Nouvelle app `apps/mobile` (Expo SDK 58, React Native 0.88) : connexion, création d'un épisode (sujet, langue, 5 ou 15 min, validation du plan facultative), bibliothèque, état et avancement, plan à valider, sources avec rang de fiabilité et licence, lecteur (±15 s, vitesse ×1 à ×2). Textes FR/EN selon le téléphone.
 - Un brouillon refusé (quota, durée) est supprimé au lieu de rester dans la bibliothèque.

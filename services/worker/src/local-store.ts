@@ -1,4 +1,4 @@
-import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import type { AudioStore } from "./synthesis.js";
 
@@ -18,6 +18,10 @@ export class LocalDirStore implements AudioStore {
     const target = this.safe(path);
     await mkdir(dirname(target), { recursive: true });
     await writeFile(join(target), bytes);
+  }
+
+  async get(path: string): Promise<Uint8Array> {
+    return new Uint8Array(await readFile(this.safe(path)));
   }
 
   async remove(paths: readonly string[]): Promise<void> {
