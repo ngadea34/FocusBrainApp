@@ -14,3 +14,4 @@
 | R10 | Tests SQL exécutés sur PostgreSQL 16 nu (shim) et non sur Supabase réel | Certaine aujourd'hui | Moyen | Rejouer les tests sur l'instance Supabase de dev (P1-5), CI avec `supabase start` |
 | R11 | Code hors dépôt distant (perte possible) | Moyenne | Élevé | D1 : créer le dépôt GitHub ; copie dans le dossier partagé du projet en attendant |
 | R12 | Positionnement perçu comme médical | Faible | Élevé (réglementaire) | Formulations produit, CGU, pas de promesse thérapeutique ni diagnostique |
+| R13 | Sources de dev limitées à Wikipédia (tertiaire) et modèle local 8B : vérification des faits moins fiable qu'avec des sources primaires et un grand modèle | Moyen | Citation exacte exigée, rétrogradation en « nuancée » sinon ; sources primaires et modèle de production à décider avant la bêta |

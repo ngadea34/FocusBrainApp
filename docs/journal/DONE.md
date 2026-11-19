@@ -10,5 +10,6 @@
 | 2026-11-19 | Schéma déployé sur le projet Supabase de dev (UE) | `bash supabase/tests/run-remote.sh nejqievnldeqiasqsdlj` → 3 suites vertes ; REST anonyme → 401 sur les tables et `request_generation` |
 | 2026-11-19 | Lien d'écoute signé, réservé au propriétaire, qui expire | `pnpm test:remote nejqievnldeqiasqsdlj` → 4 tests ; base vérifiée vide après coup |
 | 2026-11-19 | Suppression de compte : données puis tous les fichiers (orphelins compris) | `pnpm test:db` → 84 assertions + 10 tests ; `pnpm test:remote nejqievnldeqiasqsdlj` → 6 tests ; suites SQL rejouées sur le projet réel |
+| 2026-11-19 | Étapes de génération réelles (intention → vérification) avec modèle local et Wikipédia | `pnpm test:db` → 14 tests dont 4 sur les moteurs (sources filtrées, réécriture, citations exactes, validation du plan modifié) ; `pnpm test` → 60 tests. Pas encore essayé avec le vrai Qwen3 ni le vrai Wikipédia |
 
 Non terminé (pas encore de test) : application mobile, moteurs LLM/recherche réels, stockage Supabase du worker, moteurs de génération, Edge Functions, paiements, admin.

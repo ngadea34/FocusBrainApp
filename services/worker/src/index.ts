@@ -6,3 +6,5 @@ export * from "./providers/google-tts.js";
 export * from "./supabase-store.js";
 export * from "./storage-cleanup.js";
 export * from "./providers/ollama.js";
+export * from "./engines.js";
+export * from "./providers/wikipedia.js";
