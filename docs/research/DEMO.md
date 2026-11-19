@@ -1,6 +1,6 @@
 # Démonstration du moteur documentaire V1
 
-Générée le 2026-11-19 20:23 UTC par `pnpm research:demo`, contre les vraies API publiques.
+Générée le 2026-11-19 20:36 UTC par `pnpm research:demo`, contre les vraies API publiques.
 La vérification des affirmations par le modèle n'est pas incluse : elle demande Qwen3 sur le PC de développement.
 
 ## Simple : « couleur bleue du ciel diffusion Rayleigh » / « Rayleigh scattering sky colour »
@@ -8,17 +8,18 @@ La vérification des affirmations par le modèle n'est pas incluse : elle demand
 | Connecteur | Résultat | Durée |
 |---|---|---|
 | wikidata | 0 documents | 1.1 s |
-| hal | 5 documents | 1.4 s |
-| crossref | 8 documents | 2.3 s |
-| pubmed | 4 documents | 3.4 s |
-| europepmc | 4 documents | 14.9 s |
-| wikipedia | erreur : fr.wikipedia.org_429 | 31.4 s |
+| crossref | 8 documents | 1.2 s |
+| openalex | 8 documents | 1.3 s |
+| hal | 5 documents | 1.6 s |
+| pubmed | 4 documents | 3.5 s |
+| europepmc | 4 documents | 3.7 s |
+| wikipedia | 4 documents | 27.3 s |
 
-24 documents après déduplication, dont 6 dont le texte peut être transmis au modèle (licence).
+30 documents après déduplication, dont 7 dont le texte peut être transmis au modèle (licence).
 
 | Rang | Type de preuve | Licence | → modèle | Sources | Référence |
 |---|---|---|---|---|---|
-| 3 | peer_reviewed_study | restricted | non | hal | Stéphane Viollet, Julien Serres (2025). Mesurer l'invisible dans le ciel pour naviguer : une approche inspirée du vivant. La Revue de l'électricité et de l'élec |
+| 3 | peer_reviewed_study | restricted | non | hal, openalex | Stéphane Viollet, Julien Serres (2025). Mesurer l'invisible dans le ciel pour naviguer : une approche inspirée du vivant. https://hal.science/hal-05357612v1 |
 | 3 | peer_reviewed_study | unknown | non | pubmed | Hu XL, Liu SP, Li N (2003). Resonance Rayleigh scattering spectra for studying the interaction of aminoglycoside antibiotics with pontamine sky blue and their a |
 | 3 | peer_reviewed_study | unknown | non | pubmed | Ehlers K, Chakrabarty R, Moosmüller H (2014). Blue moons and Martian sunsets. Applied optics. doi:10.1364/ao.53.001808 |
 | 3 | peer_reviewed_study | unknown | non | pubmed | Gedzelman SD (2005). Simulating colors of clear and partly cloudy skies. Applied optics. doi:10.1364/ao.44.005723 |
@@ -35,14 +36,15 @@ La vérification des affirmations par le modèle n'est pas incluse : elle demand
 
 | Connecteur | Résultat | Durée |
 |---|---|---|
-| wikipedia | 8 documents | 1.1 s |
+| wikipedia | 8 documents | 0.7 s |
 | wikidata | 0 documents | 1.1 s |
-| hal | 8 documents | 1.5 s |
-| pubmed | 5 documents | 2.2 s |
-| crossref | 8 documents | 2.4 s |
-| europepmc | 8 documents | 16.8 s |
+| crossref | 8 documents | 1.3 s |
+| openalex | 8 documents | 1.6 s |
+| hal | 8 documents | 1.7 s |
+| pubmed | 5 documents | 4.3 s |
+| europepmc | 8 documents | 11.0 s |
 
-35 documents après déduplication, dont 12 dont le texte peut être transmis au modèle (licence).
+40 documents après déduplication, dont 15 dont le texte peut être transmis au modèle (licence).
 
 | Rang | Type de preuve | Licence | → modèle | Sources | Référence |
 |---|---|---|---|---|---|
@@ -51,8 +53,8 @@ La vérification des affirmations par le modèle n'est pas incluse : elle demand
 | 3 | peer_reviewed_study | restricted | non | hal | Géraldine Rauchs, Dorothée Feyers, Brigitte Landeau et al. (2011). Sleep contributes to the strengthening of some memories over others, depending on hippocampal |
 | 3 | peer_reviewed_study | unknown | non | pubmed | Walker MP, Stickgold R (2004). Sleep-dependent learning and memory consolidation. Neuron. doi:10.1016/j.neuron.2004.08.031 |
 | 3 | peer_reviewed_study | unknown | non | pubmed | Cousins JN, Fernández G (2019). The impact of sleep deprivation on declarative memory. Progress in brain research. doi:10.1016/bs.pbr.2019.01.007 |
-| 3 | peer_reviewed_study | unknown | non | pubmed | Pace-Schott EF, Germain A, Milad MR (2015). Effects of sleep on memory for conditioned fear and fear extinction. Psychological bulletin. doi:10.1037/bul0000014 |
-| 3 | peer_reviewed_study | unknown | non | pubmed | Sagaspe P, Charles A, Taillard J et al. (2003). [Inhibition and working memory: effect of acute sleep deprivation on a random letter generation task]. Canadian  |
+| 3 | peer_reviewed_study | unknown | non | pubmed | Lo JC, Chong PL, Ganesan S et al. (2016). Sleep deprivation increases formation of false memory. Journal of sleep research. doi:10.1111/jsr.12436 |
+| 3 | peer_reviewed_study | unknown | non | pubmed, openalex | Sagaspe P, Charles A, Taillard J et al. (2003). [Inhibition and working memory: effect of acute sleep deprivation on a random letter generation task]. doi:10.10 |
 | 3 | peer_reviewed_study | unknown | non | europepmc | Hariyanti D, Muliadi ARP, Rosyidah C et al. (2026). Impact of combined chronic stress and REM sleep deprivation on memory function and hippocampal BDNF protein  |
 | 3 | peer_reviewed_study | cc-by-nc | non | europepmc | Chen X, Ruan F, Rodriguez AM et al. (2026). Sleep-dependent DNA methylation remodeling in basolateral amygdala fear engrams. Cell reports. doi:10.1016/j.celrep. |
 | 3 | peer_reviewed_study | cc-by | oui | europepmc | Sahnoun I, Moussa I, Ghériani R et al. (2023). [Obstructive hypopnea sleep apnea syndrome in the elderly]. The Pan African medical journal. doi:10.11604/pamj.20 |
@@ -63,18 +65,19 @@ La vérification des affirmations par le modèle n'est pas incluse : elle demand
 
 | Connecteur | Résultat | Durée |
 |---|---|---|
-| wikipedia | erreur : en.wikipedia.org_429; fr.wikipedia.org_429 | 0.5 s |
-| wikidata | erreur : www.wikidata.org_429; www.wikidata.org_429 | 1.0 s |
-| hal | 8 documents | 1.2 s |
-| pubmed | 5 documents | 2.2 s |
-| crossref | 8 documents | 2.3 s |
-| europepmc | 8 documents | 7.1 s |
+| wikipedia | erreur : en.wikipedia.org_429 | 0.9 s |
+| wikidata | erreur : www.wikidata.org_429 | 1.0 s |
+| openalex | 8 documents | 1.2 s |
+| crossref | 8 documents | 1.2 s |
+| hal | 8 documents | 1.3 s |
+| pubmed | 5 documents | 2.3 s |
+| europepmc | 8 documents | 18.6 s |
 
-24 documents après déduplication, dont 5 dont le texte peut être transmis au modèle (licence).
+33 documents après déduplication, dont 10 dont le texte peut être transmis au modèle (licence).
 
 | Rang | Type de preuve | Licence | → modèle | Sources | Référence |
 |---|---|---|---|---|---|
-| 2 | systematic_review | unknown | non | pubmed | Santos RMS, Mendes CG, Marques Miranda D et al. (2022). The Association between Screen Time and Attention in Children: A Systematic Review. Developmental neurop |
+| 2 | systematic_review | unknown | non | pubmed, openalex | Santos RMS, Mendes CG, Marques Miranda D et al. (2022). The Association between Screen Time and Attention in Children: A Systematic Review. doi:10.1080/87565641 |
 | 2 | systematic_review | unknown | non | pubmed | Eirich R, McArthur BA, Anhorn C et al. (2022). Association of Screen Time With Internalizing and Externalizing Behavior Problems in Children 12 Years or Younger |
 | 2 | systematic_review | cc-by | oui | europepmc | Zhao C, Xu J, Wu X et al. (2026). Screen time and attention-deficit/hyperactivity disorder in children: a systematic review and meta-analysis. doi:10.3389/fped. |
 | 3 | peer_reviewed_study | unknown | non | hal | Lee Jasmine C Capilastique, Raiza Marie A Dagohoy, Angel Grace D Garino et al. (2026). Screen Time and Attention Span among Children in a Private School in Iloi |
@@ -83,6 +86,6 @@ La vérification des affirmations par le modèle n'est pas incluse : elle demand
 | 3 | peer_reviewed_study | unknown | non | hal | Marie Jourdren, Aurélie Bucaille, Juliette Ropars (2023). The Impact of Screen Exposure on Attention Abilities in Young Children: A Systematic Review. Pediatric |
 | 3 | peer_reviewed_study | unknown | non | pubmed | Kar SS, Dube R, Goud BKM et al. (2025). Impact of Screen Time on Development of Children. Children (Basel, Switzerland). doi:10.3390/children12101297 |
 | 3 | peer_reviewed_study | unknown | non | pubmed | Nagata JM, Lee CM, Hur JO et al. (2025). What we know about screen time and social media in early adolescence: a review of findings from the Adolescent Brain Co |
-| 3 | peer_reviewed_study | unknown | non | pubmed | Harlé B, Desmurget M (2012). [Effects on children's cognitive development of chronic exposure to screens]. Archives de pediatrie : organe officiel de la Societe |
+| 3 | peer_reviewed_study | unknown | non | pubmed, openalex | Harlé B, Desmurget M (2012). [Effects on children's cognitive development of chronic exposure to screens]. doi:10.1016/j.arcped.2012.04.003 |
 | 3 | peer_reviewed_study | cc-by | oui | europepmc | Carcelén-Fraile MDC, Camacho-Illana A, López-Cantero V et al. (2026). Physical Activity, Screen Time, Cardiorespiratory Fitness, and Selective Attention in Prim |
 | 3 | peer_reviewed_study | cc-by | oui | europepmc | Panayotova GG, Yakabova DN (2026). Associations Between Early Screen Exposure and Neurocognitive Outcomes in Children Aged 2-5 Years: A Systematic Review. Healt |

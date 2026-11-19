@@ -25,4 +25,4 @@ Format : date · décision · statut (Validée / Technique réversible / En atte
 | T14 | 2026-11-19 | Seuls les textes sous CC0 / domaine public / CC BY / CC BY-SA sont transmis au modèle ; licence inconnue = fermée | Technique (brief §5) | Règle prudente par défaut, testée |
 | T15 | 2026-11-19 | Rang de fiabilité dérivé du type de preuve uniquement, jamais des citations | Technique (brief §4) | Testé |
 | D5–D8 | 2026-11-19 | Voir docs/AUDIT.md §9 | En attente | Arbitrages du propriétaire |
-| D9 | 2026-11-19 | Validation juridique de la politique de licences ; la vérification peut-elle lire un résumé fermé sans le reproduire ? | En attente (juriste) | Option `verificationMayReadRestricted`, désactivée par défaut |
+| D9 | 2026-11-19 | Validation juridique de la politique de licences ; la vérification peut-elle lire un résumé fermé sans le reproduire ? | Acceptée par Nico le 19/11/2026 pour le développement ; validation par un juriste obligatoire avant la commercialisation | Option `verificationMayReadRestricted`, désactivée par défaut |
