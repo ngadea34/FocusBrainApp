@@ -118,14 +118,14 @@ La vérification ne lit, par défaut, que les textes sous licence ouverte (`veri
 | PubMed (E-utilities) | Sans clé | 3 req/s sans clé (en-tête `X-RateLimit-Limit`, observé) | Gratuit | Aucune licence fournie : résumés traités comme non réutilisables | JSON + XML |
 | Crossref (REST) | Sans clé | 1 req/s, 1 à la fois sur le pool public (en-têtes, observé) | Gratuit | Licence par DOI (URL) ; les licences « tdm » ne valent pas réutilisation | JSON |
 | HAL (Solr) | Sans clé | Non documentées dans nos tests | Gratuit | `licence_s` ; souvent « hal-authorisation » (non ouverte, observé) | JSON |
-| Wikipédia (Action API) | Sans clé | 429 depuis le cloud avec un User-Agent générique (observé) ; Wikimedia demande un User-Agent avec contact | Gratuit | CC BY-SA 4.0 | JSON |
+| Wikipédia (Action API) | Sans clé | Wikimedia demande un User-Agent avec contact (variable `RESEARCH_CONTACT`). Avec contact, depuis le cloud : réponses OK sur 2 sujets sur 3, puis 429 (IP partagée, observé le 19/11/2026) | Gratuit | CC BY-SA 4.0 | JSON |
 | Wikidata (Action API) | Sans clé | Idem Wikimedia (429 observé) | Gratuit | CC0 | JSON |
 
 **Prêt, mais désactivé**
 
 | Source | Accès | Limites | Coût | Licence des contenus | Format |
 |---|---|---|---|---|---|
-| OpenAlex | **Clé gratuite requise** : sans clé, budget quotidien partagé par IP, épuisé (429, observé) | Budget quotidien par clé (non vérifié en détail) | Gratuit avec clé | Licence par emplacement (`primary_location.license`) | JSON |
+| OpenAlex | **Clé gratuite requise** : sans clé, budget quotidien partagé par IP, épuisé (429, observé) | Clé gratuite : 10 000 crédits par jour, une recherche coûte 10 crédits, soit environ 1 000 recherches par jour (en-têtes `X-RateLimit-*` observés le 19/11/2026) | Gratuit avec clé, sans moyen de paiement | Licence par emplacement (`primary_location.license`) | JSON |
 
 **Non intégrées en V1 (phase 2)**
 
@@ -160,7 +160,7 @@ Ces informations n'ont pas été vérifiées en direct.
 **Autres opérations**
 - **Désactiver une source** : `new ResearchService(connectors, { disabled: ["hal"] })`. Aucune autre modification n'est nécessaire.
 - **Limites d'appels** : réglage `minIntervalMs` par hôte dans `Http`, par exemple Crossref 1100 ms et PubMed 400 ms. Avec une clé NCBI, PubMed monte à 10 req/s (non vérifié).
-- **Wikimedia** : fournir un User-Agent avec un moyen de contact (option `userAgent` de `Http`) avant un usage régulier.
-- **OpenAlex** : clé gratuite en secret réseau (`api.openalex.org`, en-tête `Authorization: Bearer …`), puis retirer `openalex` de `disabled`.
+- **Contact du User-Agent** : variable d'environnement `RESEARCH_CONTACT` (e-mail ou URL), lue par `researchUserAgent()`. Elle n'est jamais écrite dans le dépôt, qui est public. Les 429 de Wikimedia qui restent viennent de l'IP partagée du cloud ; le PC de dev ou le serveur de production ont leur propre IP.
+- **OpenAlex** : actif. En dev, la clé gratuite est injectée par le secret réseau (`api.openalex.org`, `Authorization: Bearer`). Ailleurs (PC de dev, production), la passer au connecteur depuis `OPENALEX_API_KEY` ; elle part en en-tête, jamais dans l'URL ni dans les journaux.
 - **Licences** : toute nouvelle forme de licence non reconnue tombe en « restricted ». Pour l'autoriser, ajouter une règle dans `license.ts` **et** un test.
 - **Cache** : `MemoryCache` en développement. En production, brancher une implémentation persistante de l'interface `Cache`, par exemple une table Postgres avec une durée de vie.

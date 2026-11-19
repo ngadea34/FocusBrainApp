@@ -14,3 +14,4 @@
 | 2026-11-19 | Moteur documentaire multi-sources (6 connecteurs actifs), licences, types de preuves, déduplication, vérification croisée | `pnpm test` → 84 tests ; `pnpm test:db` → 84 assertions + 15 tests ; `pnpm test:live` FR/EN ; démo 3 sujets (`docs/research/DEMO.md`) |
 
 Non terminé (pas encore de test) : application mobile, moteurs LLM/recherche réels, stockage Supabase du worker, moteurs de génération, Edge Functions, paiements, admin.
+| 2026-11-19 | OpenAlex actif et User-Agent avec contact | `pnpm test` → 92 tests (clé en en-tête Bearer, jamais dans l'URL ; contact mailto) ; `pnpm test:live` et `pnpm research:demo` avec OpenAlex → 8 documents par sujet |

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyEvidence, CrossrefConnector, dedupe, EuropePmcConnector, generationContent, HalConnector, Http, HttpError,
-  makeDocument, MemoryCache, normalizeLicense, OpenAlexConnector, PubMedConnector, ResearchService, WikidataConnector, WikipediaConnector,
+  makeDocument, MemoryCache, normalizeLicense, OpenAlexConnector, PubMedConnector, researchUserAgent, ResearchService, WikidataConnector, WikipediaConnector,
+  DEFAULT_USER_AGENT,
   type Connector, type ResearchDocument,
 } from "../src/index.js";
 import { fixtureHttp } from "./fixtures.js";
@@ -115,6 +116,34 @@ describe("connecteurs (réponses réelles enregistrées le 19/11/2026)", () => {
     const [d] = await new OpenAlexConnector(new Http({ fetchImpl })).search("sleep", "en-GB");
     expect(d).toMatchObject({ abstract: "Sleep matters", ids: { doi: "10.1000/abc" } });
     expect(d!.license.allowedForGeneration).toBe(true);
+  });
+
+  it("OpenAlex : envoie la clé en en-tête Bearer quand elle est fournie, jamais dans l'URL", async () => {
+    const seen: { url: string; auth: string | null }[] = [];
+    const fetchImpl = (async (url: string, init: RequestInit) => {
+      seen.push({ url, auth: new Headers(init.headers).get("authorization") });
+      return new Response(JSON.stringify({ results: [] }));
+    }) as unknown as typeof fetch;
+    await new OpenAlexConnector(new Http({ fetchImpl }), undefined, "k-123").search("sleep", "en-GB");
+    await new OpenAlexConnector(new Http({ fetchImpl })).search("sleep", "en-GB");
+    expect(seen[0]).toMatchObject({ auth: "Bearer k-123" });
+    expect(seen[0]!.url).not.toContain("k-123");
+    expect(seen[1]!.auth).toBeNull();
+  });
+});
+
+describe("User-Agent avec contact (Wikimedia, Crossref)", () => {
+  it("ajoute le contact donné, en mailto pour un e-mail", () => {
+    expect(researchUserAgent("a@b.test")).toBe("podcast-app-research/0.1 (mailto:a@b.test)");
+    expect(researchUserAgent("https://exemple.test/contact")).toBe("podcast-app-research/0.1 (https://exemple.test/contact)");
+    expect(researchUserAgent(" ")).toBe(DEFAULT_USER_AGENT);
+  });
+
+  it("Http l'envoie sur chaque requête", async () => {
+    let ua: string | null = null;
+    const fetchImpl = (async (_u: string, init: RequestInit) => { ua = new Headers(init.headers).get("user-agent"); return new Response("{}"); }) as unknown as typeof fetch;
+    await new Http({ fetchImpl, userAgent: researchUserAgent("a@b.test") }).json("https://a.test/y");
+    expect(ua).toBe("podcast-app-research/0.1 (mailto:a@b.test)");
   });
 });
 

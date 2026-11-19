@@ -5,17 +5,26 @@ import type { Connector, ResearchDocument, SearchOptions } from "../types.js";
 /**
  * OpenAlex — découverte et relations bibliographiques. Depuis 2026, une clé gratuite est
  * nécessaire (sans clé, budget quotidien partagé par adresse IP, épuisé lors du test du
- * 19/11/2026). Désactivé par défaut ; la clé passe par un secret réseau (Authorization: Bearer).
- * Le nombre de citations n'est PAS utilisé pour juger la qualité.
+ * 19/11/2026). La clé est envoyée en en-tête Authorization: Bearer : soit injectée par le
+ * secret réseau de l'environnement de dev, soit passée au constructeur (OPENALEX_API_KEY côté
+ * worker). Clé gratuite : 10 000 crédits par jour, une recherche coûte 10 crédits (observé le
+ * 19/11/2026). Le nombre de citations n'est PAS utilisé pour juger la qualité.
  */
 export class OpenAlexConnector implements Connector {
   readonly id = "openalex";
   readonly locales = "any" as const;
-  constructor(private readonly http: Http, private readonly base = "https://api.openalex.org") {}
+  constructor(
+    private readonly http: Http,
+    private readonly base = "https://api.openalex.org",
+    private readonly apiKey?: string,
+  ) {}
 
   async search(query: string, _locale: string, opts: SearchOptions = {}): Promise<ResearchDocument[]> {
     const p = new URLSearchParams({ search: query, per_page: String(opts.limit ?? 5) });
-    const body = await this.http.json<{ results?: Work[] }>(`${this.base}/works?${p}`, opts.signal ? { signal: opts.signal } : {});
+    const body = await this.http.json<{ results?: Work[] }>(`${this.base}/works?${p}`, {
+      ...(opts.signal ? { signal: opts.signal } : {}),
+      ...(this.apiKey ? { headers: { Authorization: `Bearer ${this.apiKey}` } } : {}),
+    });
     return (body.results ?? []).map(toDocument);
   }
 }

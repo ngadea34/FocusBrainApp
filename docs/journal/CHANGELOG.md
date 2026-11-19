@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 2026-11-19 — OpenAlex actif, User-Agent avec contact
+- OpenAlex : la clé gratuite est vérifiée (200, ~1 000 recherches par jour) ; le connecteur accepte la clé en en-tête Bearer et entre dans l'essai en direct et la démo.
+- `researchUserAgent()` : User-Agent avec le contact de `RESEARCH_CONTACT` (jamais dans le dépôt public), utilisé par défaut par `Http`.
+- D9 acceptée pour le développement ; juriste avant la commercialisation.
+
 ## 2026-11-19 — Moteur documentaire V1 (brief « Research Engine V1 »)
 - Nouveau paquet `packages/research`, couche indépendante des moteurs métier :
   - connecteurs Europe PMC, PubMed, Crossref, HAL, Wikipédia, Wikidata et OpenAlex (ce dernier désactivé : clé gratuite requise) ;

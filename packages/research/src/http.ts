@@ -44,6 +44,20 @@ export interface HttpOptions {
 
 export const DEFAULT_USER_AGENT = "podcast-app-research/0.1 (development)";
 
+/**
+ * User-Agent avec moyen de contact, demandé par Wikimedia et Crossref (pool « poli »).
+ * Le contact vient de la variable d'environnement RESEARCH_CONTACT (e-mail ou URL) et
+ * n'est jamais écrit dans le code : le dépôt est public.
+ */
+export function researchUserAgent(contact = readEnv("RESEARCH_CONTACT")): string {
+  const c = contact?.trim();
+  return c ? `podcast-app-research/0.1 (${c.includes("@") ? `mailto:${c}` : c})` : DEFAULT_USER_AGENT;
+}
+
+function readEnv(name: string): string | undefined {
+  return (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[name];
+}
+
 export class Http {
   private readonly fetchImpl: typeof fetch;
   private readonly sleep: (ms: number) => Promise<void>;
@@ -75,7 +89,7 @@ export class Http {
       let res: Response;
       try {
         res = await this.fetchImpl(url, {
-          headers: { "User-Agent": this.opts.userAgent ?? DEFAULT_USER_AGENT, Accept: init.accept ?? "application/json", ...init.headers },
+          headers: { "User-Agent": this.opts.userAgent ?? researchUserAgent(), Accept: init.accept ?? "application/json", ...init.headers },
           signal: init.signal ? AbortSignal.any([init.signal, timeout]) : timeout,
         });
       } catch (e) {

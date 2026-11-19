@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
-  CrossrefConnector, EuropePmcConnector, HalConnector, Http, MemoryCache, PubMedConnector, ResearchService, WikidataConnector, WikipediaConnector,
+  CrossrefConnector, EuropePmcConnector, HalConnector, Http, MemoryCache, OpenAlexConnector, PubMedConnector, ResearchService, WikidataConnector, WikipediaConnector,
 } from "../src/index.js";
 
 const http = new Http({
@@ -13,7 +13,7 @@ const http = new Http({
   minIntervalMs: { "api.crossref.org": 1100, "eutils.ncbi.nlm.nih.gov": 400, "www.wikidata.org": 1000 },
 });
 const service = new ResearchService([
-  new EuropePmcConnector(http), new PubMedConnector(http), new CrossrefConnector(http), new HalConnector(http),
+  new EuropePmcConnector(http), new PubMedConnector(http), new CrossrefConnector(http), new HalConnector(http), new OpenAlexConnector(http, undefined, process.env.OPENALEX_API_KEY),
   new WikipediaConnector(http), new WikidataConnector(http),
 ], { perConnectorLimit: 3 });
 
