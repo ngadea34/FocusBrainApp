@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 2026-11-19 — Worker de génération
+- `services/worker` : file branchée sur les fonctions SQL (`PgQueue`), boucle d'exécution `runOnce` (bail + heartbeat, retry classé par statut HTTP, dead-letter, plafond de coût, annulation), fournisseur Google Chirp 3 HD (débit 1.0, lexique de prononciation), synthèse par segment avec réutilisation des segments déjà produits, stockage local pour les tests.
+- 8 tests de bout en bout contre la vraie base (`pnpm test:db`), ajoutés à la CI.
+
 ## 2026-11-19 — Dépôt et CI
 - Code poussé sur `ngadea34/FocusBrainApp`. CI GitHub Actions : typecheck, Vitest, migrations + tests SQL sur PostgreSQL 17.
 - Test d'écoute : extraits FR/EN, voix open source Piper ajoutée, Azure retiré.

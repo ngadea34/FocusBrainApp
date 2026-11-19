@@ -180,7 +180,7 @@ Chaque tâche n'est « terminée » qu'avec le test indiqué.
 | P1-4 | Créer le dépôt GitHub et pousser | Dépôt `FocusBrainApp` avec CI (typecheck, vitest, tests SQL sur PostgreSQL 17) verte | ✱ PR ouverte |
 | P1-5 | Créer le projet Supabase UE, appliquer les migrations | `supabase db push` + tests rejoués sur l'instance de dev | ⏳ Nico |
 | P1-6 | Edge Function URL signée (TTL court) | Test : refus hors propriétaire, expiration | ○ |
-| P1-7 | Worker : boucle claim/heartbeat/complete/fail + fournisseurs factices | Test d'intégration bout en bout avec faux fournisseurs, reprise après crash | ○ |
+| P1-7 | Worker : boucle claim/heartbeat/complete/fail + fournisseurs factices | Test d'intégration bout en bout avec faux fournisseurs, reprise après crash | ✱ PR ouverte (8 tests verts) |
 | P1-8 | Suppression de compte de bout en bout (données + fichiers) | Test : plus aucune ligne ni fichier | ○ |
 | P2-1 | App Expo : auth, profil, préférences, i18n FR/EN | Tests composants + parcours e2e (Maestro) | ○ |
 | P2-2 | Création d'épisode + paramètres + bibliothèque | e2e : création → `queued` | ○ |
