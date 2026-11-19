@@ -26,3 +26,8 @@ Chaque extrait existe en FR (fr-FR) et en EN (en-GB).
 
 ## Décision
 Score qualité pondéré, puis comparaison au coût par épisode (docs/AUDIT.md §7). Résultat consigné dans DECISIONS.md.
+
+## Mise à jour du 19/11/2026
+- Azure retiré du test (inscription avec carte bancaire non souhaitée). Ajout d'une voix **open source gratuite** (Piper 1.8, licence MIT, exécutable sur nos serveurs) : `fr-siwis-medium` et `en-us-lessac-medium` (pas de voix en-GB de qualité moyenne disponible).
+- Textes des extraits : `tools/tts-listening-test/extraits.json` (extrait 4 = extrait 1 à débit rapide).
+- Clés attendues dans les secrets de l'environnement : `GOOGLE_TTS_API_KEY`, `ELEVENLABS_API_KEY`.
