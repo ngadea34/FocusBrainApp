@@ -182,8 +182,8 @@ Chaque tâche n'est « terminée » qu'avec le test indiqué.
 | P1-6 | Lien d'écoute signé (TTL court) | `pnpm test:remote nejqievnldeqiasqsdlj` : propriétaire OK, autre utilisateur et anonyme refusés, lien expiré refusé | ✱ PR ouverte |
 | P1-7 | Worker : boucle claim/heartbeat/complete/fail + fournisseurs factices | Test d'intégration bout en bout avec faux fournisseurs, reprise après crash | ✱ PR ouverte (8 tests verts) |
 | P1-8 | Suppression de compte de bout en bout (données + fichiers) | `pnpm test:db` : plus aucune ligne ni fichier, orphelins compris, reprise après échec ; `pnpm test:remote` : adaptateur Storage réel | ✱ PR ouverte |
-| P2-1 | App Expo : auth, profil, préférences, i18n FR/EN | Tests composants + parcours e2e (Maestro) | ○ |
-| P2-2 | Création d'épisode + paramètres + bibliothèque | e2e : création → `queued` | ○ |
+| P2-1 | App Expo : auth, profil, préférences, i18n FR/EN | Tests composants + parcours e2e (Maestro) | ◐ auth + i18n faits (profil et préférences à venir) ; parcours e2e en navigateur au format téléphone, Maestro à venir |
+| P2-2 | Création d'épisode + paramètres + bibliothèque | e2e : création → `queued` | ✓ création → `queued` testée contre le vrai projet (`apps/mobile/test/api.remote.test.ts`) ; réglages fins (profondeur, ton…) à venir |
 | P3-1 | ResearchEngine (OpenAlex, Crossref, recherche web) multilingue | Corpus de sujets tests, références vérifiables | ○ |
 | P3-2 | SourceEvaluator (paliers, actualité, limites) | Jeu de sources annotées | ○ |
 | P4-1 | IntentEngine + CognitiveEngine (plan) | Plans conformes au schéma, adaptés aux paramètres (grille d'évaluation) | ○ |

@@ -15,4 +15,4 @@ SUPABASE_ANON_KEY=$(pick anon); SUPABASE_SERVICE_KEY=$(pick service_role)
 export SUPABASE_ANON_KEY SUPABASE_SERVICE_KEY
 # Le fetch de Node ne lit HTTPS_PROXY qu'avec cette option.
 export NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1
-exec npx vitest run --config vitest.remote.config.ts
+exec npx vitest run --config vitest.remote.config.ts "${@:2}"

@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 2026-11-19 — Application mobile, première version
+- Nouvelle app `apps/mobile` (Expo SDK 58, React Native 0.88) : connexion, création d'un épisode (sujet, langue, 5 ou 15 min, validation du plan facultative), bibliothèque, état et avancement, plan à valider, sources avec rang de fiabilité et licence, lecteur (±15 s, vitesse ×1 à ×2). Textes FR/EN selon le téléphone.
+- Un brouillon refusé (quota, durée) est supprimé au lieu de rester dans la bibliothèque.
+- Supabase (projet de dev) : mot de passe de 8 caractères minimum ; le lien de confirmation renvoie vers `apps/mobile/README.md`.
+
 ## 2026-11-19 — OpenAlex actif, User-Agent avec contact
 - OpenAlex : la clé gratuite est vérifiée (200, ~1 000 recherches par jour) ; le connecteur accepte la clé en en-tête Bearer et entre dans l'essai en direct et la démo.
 - `researchUserAgent()` : User-Agent avec le contact de `RESEARCH_CONTACT` (jamais dans le dépôt public), utilisé par défaut par `Http`.
