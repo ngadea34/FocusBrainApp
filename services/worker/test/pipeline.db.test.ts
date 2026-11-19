@@ -57,7 +57,7 @@ function handlers(tts: FakeTts, store: LocalDirStore, overrides: Handlers = {}):
 async function startJob(opts: { approval?: boolean } = {}): Promise<{ jobId: string; episodeId: string; userId: string }> {
   const c = await pool.connect();
   try {
-    const { rows: [u] } = await c.query<{ id: string }>("insert into auth.users (email) values ('w@test.local') returning id");
+    const { rows: [u] } = await c.query<{ id: string }>("insert into auth.users (id, email) values (gen_random_uuid(), 'w@test.local') returning id");
     const { rows: [e] } = await c.query<{ id: string }>(
       "insert into public.episodes (user_id, topic_prompt) values ($1, 'Sujet de test') returning id", [u!.id]);
     await c.query("insert into public.episode_settings (episode_id, user_id, duration_minutes, require_outline_approval) values ($1, $2, 5, $3)",

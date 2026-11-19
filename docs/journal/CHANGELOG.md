@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 2026-11-19 — Projet Supabase de dev
+- Projet `nejqievnldeqiasqsdlj` (eu-north-1, PostgreSQL 17) : 5 migrations appliquées via l'API d'administration, versions alignées sur les noms de fichiers.
+- `supabase/tests/run-remote.sh` : rejoue les 3 suites SQL sur l'instance réelle, chacune dans une transaction annulée. Toutes vertes.
+- Correction trouvée sur l'instance réelle : `auth.users.id` n'a pas de valeur par défaut chez Supabase, les aides de test fournissent l'identifiant.
+
 ## 2026-11-19 — Worker de génération
 - `services/worker` : file branchée sur les fonctions SQL (`PgQueue`), boucle d'exécution `runOnce` (bail + heartbeat, retry classé par statut HTTP, dead-letter, plafond de coût, annulation), fournisseur Google Chirp 3 HD (débit 1.0, lexique de prononciation), synthèse par segment avec réutilisation des segments déjà produits, stockage local pour les tests.
 - 8 tests de bout en bout contre la vraie base (`pnpm test:db`), ajoutés à la CI.
