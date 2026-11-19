@@ -5,7 +5,8 @@
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { type LlmProvider, type LlmRequest, type LlmResult, type SearchProvider, toMicros, type TtsProvider, type TtsRequest, type TtsResult } from "@app/pipeline";
+import { type LlmProvider, type LlmRequest, type LlmResult, toMicros, type TtsProvider, type TtsRequest, type TtsResult } from "@app/pipeline";
+import { type Connector, makeDocument, ResearchService } from "@app/research";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { generationHandlers, type Handlers, LocalDirStore, PgQueue, runOnce, synthesizeSegmentHandler } from "../src/index.js";
@@ -34,7 +35,7 @@ class FakeLlm implements LlmProvider {
         out = { summary: "Les volcans", keyConcepts: ["lave"], queries: [{ locale: "fr-FR", query: "volcan" }, { locale: "xx-XX", query: "ignorée" }] };
         break;
       case "evaluate_sources":
-        out = { relevance: data("source").startsWith("Volcan") ? 0.9 : 0.1, note: "ok" };
+        out = { relevance: data("source").includes("Fromagerie") ? 0.1 : 0.9, note: "ok" };
         break;
       case "outline":
         out = { sections: [{ title: "Origine", goal: "Comprendre", concepts: [], estimatedMinutes: 2 }, { title: "Éruptions", concepts: [], estimatedMinutes: 3 }], openQuestions: [] };
@@ -48,9 +49,11 @@ class FakeLlm implements LlmProvider {
       }
       case "verify": {
         const claim = data("affirmation");
-        out = claim.includes("fromage")
-          ? { status: "rejected", quote: "", rationale: "contredit" }
-          : { status: "confirmed", quote: "Les volcans crachent de la lave lors des éruptions.", rationale: "explicite" };
+        const src = data("source");
+        out = claim.includes("fromage") ? { status: "rejected", quote: "", rationale: "contredit" }
+          : src.includes("ne crachent pas") ? { status: "rejected", quote: "Les volcans ne crachent pas de lave.", rationale: "contredit" }
+          : src.includes("crachent de la lave lors des éruptions") ? { status: "confirmed", quote: "Les volcans crachent de la lave lors des éruptions.", rationale: "explicite" }
+          : { status: "unverified", quote: "", rationale: "muet" };
         break;
       }
     }
@@ -58,18 +61,22 @@ class FakeLlm implements LlmProvider {
   }
 }
 
-const search: SearchProvider = {
-  id: "wikipedia",
-  async search(_q, locale) {
-    return {
-      hits: [
-        { title: "Volcan", url: "https://fr.wikipedia.org/wiki/Volcan#haut", snippet: EXTRACT, locale },
-        { title: "Fromagerie", url: "https://fr.wikipedia.org/wiki/Fromagerie", snippet: "Lieu de fabrication du fromage.", locale },
-      ],
-      usage: [{ category: "research", provider: "wikipedia", units: 1, unit: "queries", amountMicros: 0 }],
-    };
-  },
-};
+const SECRET = "TEXTE_SOUS_DROITS_EDITEUR";
+const docs = (contradicting: boolean) => [
+  makeDocument({ provider: "europepmc", title: "Volcanic eruptions", authors: ["Doe J"], publicationDate: "2024", ids: { doi: "10.1000/volc", pmid: "111" },
+    abstract: EXTRACT, declaredTypes: ["Journal Article"], peerReview: "peer_reviewed", license: "cc by", language: "fr" }),
+  makeDocument({ provider: "pubmed", title: "Volcanic eruptions.", ids: { pmid: "111" }, abstract: "doublon", declaredTypes: ["Journal Article"], peerReview: "peer_reviewed" }),
+  makeDocument({ provider: "pubmed", title: "Lave et santé", ids: { pmid: "222" }, abstract: `${SECRET} Les volcans ne crachent pas de lave.`,
+    declaredTypes: ["Journal Article"], peerReview: "peer_reviewed" }),
+  makeDocument({ provider: "wikipedia", title: "Volcan", url: "https://fr.wikipedia.org/wiki/Volcan", abstract: "Un volcan est une structure géologique.",
+    declaredTypes: ["encyclopedia article"], license: "https://creativecommons.org/licenses/by-sa/4.0/", language: "fr" }),
+  makeDocument({ provider: "wikipedia", title: "Fromagerie", url: "https://fr.wikipedia.org/wiki/Fromagerie", abstract: "Lieu de fabrication du fromage.",
+    declaredTypes: ["encyclopedia article"], license: "https://creativecommons.org/licenses/by-sa/4.0/" }),
+  ...(contradicting ? [makeDocument({ provider: "hal", title: "Contre-étude", ids: { halId: "hal-1" }, abstract: "Les volcans ne crachent pas de lave.",
+    declaredTypes: ["journal article"], peerReview: "peer_reviewed", license: "cc by" })] : []),
+];
+const connector = (contradicting: boolean): Connector => ({ id: "fake", locales: "any", async search() { return docs(contradicting); } });
+const research = (contradicting = false) => new ResearchService([connector(contradicting)]);
 
 class FakeTts implements TtsProvider {
   readonly id = "fake-tts";
@@ -88,9 +95,9 @@ beforeAll(async () => {
   await pool.query("update public.episode_jobs set status = 'cancelled' where status not in ('ready','failed','cancelled')");
 });
 
-function handlers(llm: FakeLlm, tts: FakeTts): Handlers {
+function handlers(llm: FakeLlm, tts: FakeTts, contradicting = false): Handlers {
   return {
-    ...generationHandlers({ pool, llm, search }),
+    ...generationHandlers({ pool, llm, research: research(contradicting) }),
     synthesize_segment: synthesizeSegmentHandler({ pool, tts, store }),
     assemble: async () => ({ output: {}, usage: [] }),
   };
@@ -136,9 +143,16 @@ describe("moteurs de génération", () => {
     await drain(handlers(llm, tts), jobId);
 
     expect((await one<{ status: string }>("select status from public.episode_jobs where id = $1", [jobId]))[0]!.status).toBe("ready");
-    const sources = await one<{ title: string; retained: boolean; url: string }>(
-      "select s.title, es.retained, s.url from public.episode_sources es join public.sources s on s.id = es.source_id where es.episode_id = $1 order by s.title", [episodeId]);
-    expect(sources.map((s) => [s.title, s.retained])).toEqual([["Fromagerie", false], ["Volcan", true]]);
+    const sources = await one<{ title: string; retained: boolean; license_code: string; evidence_level: string; providers: string[]; citation: string; quality_tier: number }>(
+      `select s.title, es.retained, s.license_code, s.evidence_level, s.providers, s.citation, es.quality_tier
+         from public.episode_sources es join public.sources s on s.id = es.source_id where es.episode_id = $1 order by s.title`, [episodeId]);
+    expect(sources.map((s) => [s.title, s.retained])).toEqual([["Fromagerie", false], ["Lave et santé", true], ["Volcan", true], ["Volcanic eruptions", true]]);
+    const merged = sources.find((s) => s.title === "Volcanic eruptions")!;
+    expect(merged).toMatchObject({ license_code: "cc-by", evidence_level: "peer_reviewed_study", quality_tier: 3 });
+    expect(merged.providers.sort()).toEqual(["europepmc", "pubmed"]); // dédupliqué, provenance conservée
+    expect(merged.citation).toContain("doi:10.1000/volc");
+    // Licence : le texte sous droits d'éditeur n'est jamais transmis au modèle.
+    expect(llm.calls.some((c) => c.untrusted.some((u) => u.content.includes(SECRET)))).toBe(false);
 
     const scripts = await one("select 1 from public.script_versions where episode_id = $1", [episodeId]);
     expect(scripts).toHaveLength(2); // version initiale + réécriture
@@ -153,7 +167,12 @@ describe("moteurs de génération", () => {
          join public.script_sections s on s.id = c.section_id and s.script_version_id = e.current_script_version_id
          left join public.claim_evidence ev on ev.claim_id = c.id where c.episode_id = $1`, [episodeId]);
     expect(claims.map((c) => c.text)).not.toContain("Phrase inventée absente."); // absente du texte : ignorée
-    expect(claims.every((c) => c.status === "confirmed" && c.quote_original && EXTRACT.includes(c.quote_original))).toBe(true);
+    expect(claims.length).toBeGreaterThan(0);
+    expect(claims.every((c) => c.status === "confirmed")).toBe(true);
+    // Chaque citation conservée figure mot pour mot dans la source ; au moins une par affirmation confirmée.
+    const quotes = claims.map((c) => c.quote_original).filter((q): q is string => !!q);
+    expect(quotes.length).toBeGreaterThan(0);
+    expect(quotes.every((q) => EXTRACT.includes(q))).toBe(true);
 
     expect(tts.texts.join(" ")).toContain(TRUE);
     expect(tts.texts.join(" ")).not.toContain("fromage");
@@ -199,5 +218,22 @@ describe("moteurs de génération", () => {
       `select s.chapter_title from public.script_sections s join public.episodes e on e.id = s.episode_id
         where s.episode_id = $1 and s.script_version_id = e.current_script_version_id`, [episodeId]);
     expect(titles.map((t) => t.chapter_title)).toEqual(["Ma seule section"]);
+  });
+
+  it("signale une contradiction entre sources indépendantes au lieu de trancher", async () => {
+    const llm = new FakeLlm();
+    const tts = new FakeTts();
+    const { jobId, episodeId } = await startJob();
+    await drain(handlers(llm, tts, true), jobId);
+    expect((await one<{ status: string }>("select status from public.episode_jobs where id = $1", [jobId]))[0]!.status).toBe("ready");
+    const rows = await one<{ status: string; rationale: string }>(
+      `select c.status, c.rationale from public.claims c join public.episodes e on e.id = c.episode_id
+         join public.script_sections s on s.id = c.section_id and s.script_version_id = e.current_script_version_id
+        where c.episode_id = $1 and c.text = $2`, [episodeId, TRUE]);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((r) => r.status === "nuanced" && r.rationale.includes("désaccord"))).toBe(true);
+    const ev = await one<{ support: string }>(
+      `select distinct ev.support from public.claim_evidence ev join public.claims c on c.id = ev.claim_id where c.episode_id = $1 and c.text = $2`, [episodeId, TRUE]);
+    expect(ev.map((e) => e.support).sort()).toEqual(["contradicts", "supports"]);
   });
 });

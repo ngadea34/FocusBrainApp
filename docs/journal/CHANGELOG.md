@@ -1,5 +1,18 @@
 # Journal des modifications
 
+## 2026-11-19 — Moteur documentaire V1 (brief « Research Engine V1 »)
+- Nouveau paquet `packages/research`, couche indépendante des moteurs métier :
+  - connecteurs Europe PMC, PubMed, Crossref, HAL, Wikipédia, Wikidata et OpenAlex (ce dernier désactivé : clé gratuite requise) ;
+  - accès HTTP commun : cache, reprises, espacement des appels ;
+  - licences, types de preuves, déduplication, citation.
+- Migration 0007 : métadonnées obligatoires et licences dans `sources`. Appliquée au projet de dev.
+- Moteurs :
+  - la recherche passe par `ResearchService` ;
+  - seul le texte sous licence ouverte est transmis au modèle ;
+  - vérification croisée avec deux sources indépendantes, contradictions signalées.
+- Hiérarchie `SOURCE_TIER` réalignée sur le brief : recommandations > revues systématiques > études relues.
+- Documentation : `docs/research/ARCHITECTURE.md` et `docs/research/DEMO.md`.
+
 ## 2026-11-19 — Modèle local et vraies étapes de génération
 - `engines.ts` : intention, recherche, évaluation des sources, plan, rédaction (section par section), vérification (affirmation par affirmation). Chaque étape lit et écrit en base ; une citation n'est conservée que si elle figure mot pour mot dans la source ; une affirmation « confirmée » sans citation exacte est rétrogradée en « nuancée » ; les phrases encore rejetées après la réécriture autorisée sont retirées du script final.
 - `WikipediaSearch` : recherche gratuite sans clé (source tertiaire, rang 6, limite signalée).

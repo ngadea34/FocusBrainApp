@@ -19,12 +19,16 @@ export const outlineSchema = z
   .strict();
 export type Outline = z.infer<typeof outlineSchema>;
 
-/** Hiérarchie indicative des sources (dossier §6, SourceEvaluator). 1 = plus fiable. */
+/**
+ * Hiérarchie des sources (brief Research Engine V1 §4). 1 = plus fiable.
+ * Recommandations institutionnelles > revues systématiques > études relues par les pairs.
+ * Le détail par type de preuve est dans @app/research (RELIABILITY_TIER).
+ */
 export const SOURCE_TIER: Record<SourceKind, number> = {
-  scientific_article: 1,
+  public_institution: 1,
   systematic_review: 2,
-  public_institution: 3,
-  university: 4,
+  scientific_article: 3,
+  university: 5,
   reference_book: 5,
   popular_science: 6,
   other: 6,

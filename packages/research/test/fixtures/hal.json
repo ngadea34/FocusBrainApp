@@ -1,0 +1,41 @@
+{
+  "response":{
+    "numFound":8,
+    "start":0,
+    "maxScore":16.996857,
+    "numFoundExact":true,
+    "docs":[{
+      "docid":"832977",
+      "title_s":["Etude de l'effet de la privation de sommeil sur la mémoire consolidée chez Drosophila melanogaster","Effects of sleep deprivation on memory consolidation in Drosophila"],
+      "abstract_s":["S'il est de plus en plus évident que le sommeil joue un rôle crucial dans la consolidation de la mémoire, nous ne connaissons toujours pas le rôle exact joué par le sommeil lors de ce processus. L'objectif de ma thèse a été de mieux comprendre les interactions sommeil/mémoire. Pour cela, nous avons choisi d'étudier chez la drosophile l'effet de courtes privations de sommeil sur la consolidation de la mémoire aversive olfactive. Nous avons utilisé un protocole de conditionnement pavlovien qui permet aux drosophiles d'associer une odeur à des chocs électriques. En fonction du conditionnement qui est réalisé, deux types de mémoires consolidées peuvent être formées: la Mémoire Résistante à l'Anesthésie (MRA) et la Mémoire à Long Terme (MLT). Contrairement à la MRA, la MLT dont la formation est dépendante d'une néo synthèse protéique est couteuse en énergie. Les résultats obtenus démontrent que MRA et MLT sont toutes deux affectées par de courtes privation de sommeil, mais qu'elles deviennent insensibles à de telles privations si le test mnésique est réalisé en fin de journée. Ces résultats mettent à jour : i) une interaction fonctionnelle entre les étapes de consolidation et de rappel mnésiques, et ii) l'influence de facteurs circadiens sur la sensibilité de la mémoire aux privations de sommeil. De plus, mes résultats montrent qu'une privation de sommeil ayant lieu juste après le conditionnement exerce un effet bénéfique sur la consolidation de la mémoire. Ce travail met donc en évidence la corrélation complexe qui existe entre le rythme circadien, le sommeil, et les étapes de consolidation et de rappel des mémoires consolidées","If it is now widely accepted that sleep is important for memory consolidation, we do not know the exact role of sleep in this process. The purpose of my thesis project was to dissect the relationship between sleep and memory. To do so, we have analyzed the impact of short sleep deprivations on olfactory memory consolidation in Drosophila. In flies, a conditioning session, consisting of an odor associated with electric shocks, induces associative olfactory memory. A massed conditioning generates a consolidated memory form called Anesthesia Resistant Memory (ARM), whereas a spaced conditioning, with rest intervals, induces Long-Term Memory (LTM). ARM and LTM can both last for days but, importantly, unlike ARM, LTM is an energetically costly memory that depends on de novo protein synthesis. My results show that sleep deprivations affect LTM and, more unexpectedly, also ARM. This effect can be compensated at the step of memory retrieval if flies are tested just before lights-off, a period associated to an increase in fly locomotor activity. These results highlight: i) a functional interaction between the consolidation and the memory retrieval steps, and ii) that circadian factors influence the memory sensibility to sleep loss. Lastly, we have also shown that a sleep deprivation taking place right after conditioning, not only does not impair memory, but exerts a positive effect on memory consolidation. This work points to complex correlations between circadian rhythms, sleep, and the retrieval step of consolidated memories in Drosophila"],
+      "authFullName_s":["Eric Le Glou"],
+      "language_s":["fr"],
+      "halId_s":"tel-00832977",
+      "uri_s":"https://theses.hal.science/tel-00832977v1",
+      "docType_s":"THESE",
+      "producedDate_s":"2012-07-05",
+      "licence_s":"https://about.hal.science/hal-authorisation-v1/"
+    },{
+      "docid":"5012459",
+      "title_s":["Dette de sommeil et récupération restreinte chez le militaire : effets sur la mémoire de travail, la somnolence ressentie et les performances de conduite"],
+      "abstract_s":["Introduction : la privation de sommeil, dépassant parfois le nycthémère, est une contrainte fréquemment rencontrée en milieu militaire lors d’opérations soutenues (SUSOPS). Les militaires doivent aussi composer avec des opportunités de récupérations limitées en durée avant de devoir repartir sur le terrain. L’objectif de ce travail est de s’assurer qu’une opportunité de 3 heures de sommeil après 40 heures d’éveil continu permet une récupération au moins partielle le lendemain. Matériels et méthodes : 41 sujets sains ont participé à une étude organisée en quatre journées : une journée de base (J1), une journée après privation totale (J2), une journée après une nuit de 3h de sommeil (J3) et une journée après une nuit de 8h de sommeil (J4). La mémoire de travail était évaluée cinq fois par jour entre 08h00 et 21h00 grâce au Digit Span Task, et la somnolence subjective à partir de l’échelle de somnolence de Karolinska. Une évaluation des performances sur simulateur de conduite était réalisée à 10h00, ainsi qu’à 04h00 lors des nuits d’éveil. Résultats : nous n’observons pas d’effet de la privation de sommeil ni de la nuit de 3h au Digit Span Task, qui laisse apparaître un effet d’apprentissage. La somnolence subjective augmente significativement sous privation puis diminue entre J2 et J3. Les performances en conduites restent dégradées à J3 comparativement à J2, et ce malgré une amélioration transitoire lors de la session de nuit. L’ensemble des performances revient au niveau de base à J4. Conclusion : le bénéfice d’une courte opportunité de sommeil après une privation prolongée, bien que réel, semble limité. En outre, le Digit Span Task a soulevé des considérations méthodologiques qui incitent à reconsidérer son usage pour de futures études."],
+      "authFullName_s":["Alexandre Labarthe"],
+      "language_s":["fr"],
+      "halId_s":"dumas-05012459",
+      "uri_s":"https://dumas.ccsd.cnrs.fr/dumas-05012459v1",
+      "docType_s":"MEM",
+      "producedDate_s":"2025-03-21",
+      "licence_s":"https://about.hal.science/hal-authorisation-v1/"
+    },{
+      "docid":"5078597",
+      "title_s":["Le sommeil : vecteur d'influence sur les acteurs d'une salle de décision en situation de crise : vecteur d'influence sur les acteurs d'une salle de décision en situation de crise [ensosp]"],
+      "abstract_s":["La privation du sommeil est à l'origine d'au moins cinq des plus grandes catastrophes des trente dernières années (Bhopal, la navette Challenger, Tchernobyl, l'Exxon Valdez et le vol Aix France Rio- Paris). Une personne dort en moyenne huit heures par jour. Quelque soit sa condition physique, elle peut avoir des troubles du sommeil qui, parfois, peuvent être à l'origine de perturbation sur ses modes de fonctionnement et d'organisation. Aussi, nous nous sommes interrogés sur ce qui pourrait se produire lors d'une situation hostile pour les acteurs impliqués et pour lesquels ils seraient en manque de sommeil et de condition physique. Les agents des collectivités territoriales, participant à la mise en place ou à l'organisation d'une structure, sont tenus de se préparer pour faire face à une situation de crise. En effet, ils doivent être proactifs et détenteurs de capacités, de connaissances, d'expériences, de compétences mais aussi d'une \" bonne \" condition physique. Ce mémoire a permis d'apporter des éléments sur la gestion de crise, la condition physique et le sommeil. Après analyses sur les interactions des trois éléments et constats sur le terrain, des \" primo conseils \" de bonnes pratiques sont destinés aux personnels des collectivités territoriales qui, demain, seront éventuellement confrontés à une situation hostile."],
+      "authFullName_s":["Laurent Lecomte","Éric Dufès"],
+      "language_s":["fr"],
+      "halId_s":"hal-05078597",
+      "uri_s":"https://hal.science/hal-05078597v1",
+      "docType_s":"REPORT",
+      "producedDate_s":"2013"
+    }]
+  }
+}
