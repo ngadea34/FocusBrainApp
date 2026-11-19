@@ -125,7 +125,7 @@ Implémenté dans `supabase/migrations/` (testé, non déployé). Toutes les tab
 | Anonyme : aucun accès | ✅ testé |
 | Coûts, entrées/sorties internes d'étapes, file de suppression : invisibles côté client | ✅ testé |
 | RPC worker (`claim_step`, `record_cost`…) interdites aux utilisateurs | ✅ testé |
-| Storage privé, lecture propriétaire uniquement, écriture workers | ✅ politique + test ; diffusion par URL signée courte (Edge Function, à écrire) |
+| Storage privé, lecture propriétaire uniquement, écriture workers | ✅ politique + test ; diffusion par URL signée courte demandée par le propriétaire (décision T13, testé sur le projet réel) |
 | Fonctions `security definer` avec `search_path = ''` | ✅ |
 | Aucun secret dans l'app mobile | Principe : seule la clé publique (anon) côté client ; clés fournisseurs uniquement dans les workers |
 | Injection de prompt | Contenus non fiables (sujet, sources, plan modifié) toujours délimités (`fenceUntrusted`) et traités comme données ; sorties LLM validées par schéma zod ; plan utilisateur borné (64 Ko, forme vérifiée) |
@@ -179,7 +179,7 @@ Chaque tâche n'est « terminée » qu'avec le test indiqué.
 | P1-3 | Graphe d'étapes, retry, segments, coûts | `pnpm test` : 48 tests | ✅ |
 | P1-4 | Créer le dépôt GitHub et pousser | Dépôt `FocusBrainApp` avec CI (typecheck, vitest, tests SQL sur PostgreSQL 17) verte | ✱ PR ouverte |
 | P1-5 | Créer le projet Supabase UE, appliquer les migrations | Migrations appliquées via l'API d'administration ; `bash supabase/tests/run-remote.sh nejqievnldeqiasqsdlj` : 3 suites vertes sur l'instance (transactions annulées) ; accès anonyme refusé via l'API REST | ✅ |
-| P1-6 | Edge Function URL signée (TTL court) | Test : refus hors propriétaire, expiration | ○ |
+| P1-6 | Lien d'écoute signé (TTL court) | `pnpm test:remote nejqievnldeqiasqsdlj` : propriétaire OK, autre utilisateur et anonyme refusés, lien expiré refusé | ✱ PR ouverte |
 | P1-7 | Worker : boucle claim/heartbeat/complete/fail + fournisseurs factices | Test d'intégration bout en bout avec faux fournisseurs, reprise après crash | ✱ PR ouverte (8 tests verts) |
 | P1-8 | Suppression de compte de bout en bout (données + fichiers) | Test : plus aucune ligne ni fichier | ○ |
 | P2-1 | App Expo : auth, profil, préférences, i18n FR/EN | Tests composants + parcours e2e (Maestro) | ○ |
