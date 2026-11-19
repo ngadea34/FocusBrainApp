@@ -200,7 +200,7 @@ Chaque tâche n'est « terminée » qu'avec le test indiqué.
 | D1 | Créer le dépôt GitHub | **Fait** : `ngadea34/FocusBrainApp` (19/11/2026) | Poussée du code, CI |
 | D2 | Créer le projet Supabase (région UE, offre gratuite en dev) | Fait : eu-north-1 (Stockholm), 19/11 | P1-5 |
 | D3 | Fournisseur de synthèse vocale V1 | **Validé : Google Chirp 3 HD** (test d'écoute à l'aveugle) FR/EN (Azure, Google, ElevenLabs) — protocole dans `docs/product/TEST_ECOUTE_TTS.md` | Phase 5, prix |
-| D4 | Fournisseur et localisation des modèles IA | API Anthropic directe en développement ; décider avant la bêta entre API directe et Claude via un cloud en région UE | Phase 3–4, RGPD |
+| D4 | Fournisseur et localisation des modèles IA | Dev : Qwen3 8B local via Ollama (validé 19/11, 0 €). Production : à décider avant la bêta | Phase 3–4, RGPD |
 | D5 | Prestataire de paiement | RevenueCat (abstraction des deux stores) — à comparer en Phase 7 | Phase 7 |
 | D6 | Hébergeur des workers (UE) | À comparer (Scaleway, Fly.io, Render…) | Mise en ligne |
 | D7 | Offres, quotas et prix | Après mesure des coûts réels en bêta | Phase 7 |

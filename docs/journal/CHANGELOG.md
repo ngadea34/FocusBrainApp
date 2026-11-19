@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 2026-11-19 — Modèle local
+- `OllamaLlm` : fournisseur IA local (Qwen3 8B par défaut, sans raisonnement visible, schéma JSON transmis, contenu non fiable délimité, usage en jetons à coût nul). 4 tests.
+- Décision D4 (dev) consignée.
+
 ## 2026-11-19 — Suppression de compte complète
 - Migration 0006 : à la suppression d'un profil, tout le dossier `{user_id}/` du bucket est mis en file (couvre les fichiers orphelins). Appliquée au projet de dev.
 - Worker : `processStorageDeletions` vide la file (entrée marquée traitée seulement après suppression effective), `SupabaseStore` (dépôt, liste récursive, suppression) et `LocalDirStore` complété.
