@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 2026-11-19 — Modèle local et vraies étapes de génération
+- `engines.ts` : intention, recherche, évaluation des sources, plan, rédaction (section par section), vérification (affirmation par affirmation). Chaque étape lit et écrit en base ; une citation n'est conservée que si elle figure mot pour mot dans la source ; une affirmation « confirmée » sans citation exacte est rétrogradée en « nuancée » ; les phrases encore rejetées après la réécriture autorisée sont retirées du script final.
+- `WikipediaSearch` : recherche gratuite sans clé (source tertiaire, rang 6, limite signalée).
+- 4 tests de bout en bout des moteurs (faux modèle déterministe) + 2 tests Wikipédia.
+- `OllamaLlm` : fournisseur IA local (Qwen3 8B par défaut, sans raisonnement visible, schéma JSON transmis, contenu non fiable délimité, usage en jetons à coût nul). 4 tests.
+- Décision D4 (dev) consignée.
+
 ## 2026-11-19 — Suppression de compte complète
 - Migration 0006 : à la suppression d'un profil, tout le dossier `{user_id}/` du bucket est mis en file (couvre les fichiers orphelins). Appliquée au projet de dev.
 - Worker : `processStorageDeletions` vide la file (entrée marquée traitée seulement après suppression effective), `SupabaseStore` (dépôt, liste récursive, suppression) et `LocalDirStore` complété.
