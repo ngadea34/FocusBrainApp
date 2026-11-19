@@ -2,8 +2,8 @@ import { randomUUID } from "expo-crypto";
 import { useCallback, useEffect, useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import {
-  approveOutline, cancelGeneration, getEpisodeDetail, isActive, playbackPaths, progressOf, requestGeneration,
-  signedUrls, toAppError, type EpisodeDetail,
+  approveOutline, cancelGeneration, fullAsset, getEpisodeDetail, getProgress, isActive, playbackPaths, progressOf, requestGeneration,
+  saveProgress, signedUrls, toAppError, type Chapter, type EpisodeDetail, type Progress,
 } from "../api";
 import { useI18n } from "../I18nContext";
 import { format } from "../i18n";
@@ -16,6 +16,8 @@ export function Episode({ id, onBack }: { id: string; onBack: () => void }) {
   const { t } = useI18n();
   const [d, setD] = useState<EpisodeDetail | null>(null);
   const [urls, setUrls] = useState<string[] | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [progress, setProgress] = useState<Progress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -24,12 +26,14 @@ export function Episode({ id, onBack }: { id: string; onBack: () => void }) {
       const detail = await getEpisodeDetail(supabase, id);
       setD(detail);
       setError(null);
-      if (detail.episode.status === "ready") {
+      if (detail.episode.status === "ready" && urls === null) {
         const paths = playbackPaths(detail.audio);
+        setChapters(fullAsset(detail.audio)?.chapters ?? []);
+        setProgress(await getProgress(supabase, id).catch(() => null));
         setUrls(paths.length ? await signedUrls(supabase, paths) : []);
       }
     } catch (e) { setError(t.errors[toAppError(e).code]); }
-  }, [id, t]);
+  }, [id, t, urls]);
 
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
@@ -45,7 +49,7 @@ export function Episode({ id, onBack }: { id: string; onBack: () => void }) {
 
   if (!d) return <View><Button kind="secondary" label={t.episode.back} onPress={onBack} />{error ? <ErrorText>{error}</ErrorText> : <Body muted>…</Body>}</View>;
   const { episode, outline, sources, steps } = d;
-  const progress = progressOf(steps);
+  const steps_ = progressOf(steps);
 
   return (
     <View>
@@ -56,8 +60,8 @@ export function Episode({ id, onBack }: { id: string; onBack: () => void }) {
         <Text style={[styles.status, episode.status === "ready" && { color: colors.ok }, episode.status === "failed" && { color: colors.danger }]}>
           {t.status[episode.status]}
         </Text>
-        {isActive(episode.status) && episode.status !== "queued" && progress.total > 0 && <Body muted>{format(t.episode.progress, progress)}</Body>}
-        {episode.status === "queued" && progress.done === 0 && <Body muted>{t.episode.waitingWorker}</Body>}
+        {isActive(episode.status) && episode.status !== "queued" && steps_.total > 0 && <Body muted>{format(t.episode.progress, steps_)}</Body>}
+        {episode.status === "queued" && steps_.done === 0 && <Body muted>{t.episode.waitingWorker}</Body>}
         {error && <ErrorText>{error}</ErrorText>}
         {(isActive(episode.status) || episode.status === "awaiting_approval") &&
           <Button kind="danger" label={t.episode.cancel} busy={busy} onPress={() => act(() => cancelGeneration(supabase, id))} />}
@@ -68,7 +72,8 @@ export function Episode({ id, onBack }: { id: string; onBack: () => void }) {
       {episode.status === "ready" && (
         <Card>
           <H2>{t.episode.listen}</H2>
-          {urls && urls.length > 0 ? <Player urls={urls} key={urls.join("|")} /> : <Body muted>{t.episode.noAudio}</Body>}
+          {urls && urls.length > 0 ? <Player urls={urls} key={urls.join("|")} chapters={chapters} progress={progress}
+            onProgress={(p) => { void saveProgress(supabase, id, p).catch(() => {}); }} /> : <Body muted>{t.episode.noAudio}</Body>}
         </Card>
       )}
 

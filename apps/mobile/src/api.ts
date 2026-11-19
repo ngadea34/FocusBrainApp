@@ -5,7 +5,9 @@
  * transitions sont vérifiés côté SQL par request_generation & co).
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { EpisodeStatus } from "@app/contracts";
+import type {
+  DensityLevel, DepthLevel, DigressionLevel, EpisodeStatus, NarrationTone, RepetitionLevel, StructureKind,
+} from "@app/contracts";
 import { SIGNED_URL_TTL_SECONDS } from "./config";
 
 export const AUDIO_BUCKET = "episode-audio";
@@ -22,7 +24,10 @@ export interface EpisodeRow {
 
 export interface OutlineSection { title: string; goal?: string; concepts?: string[]; estimatedMinutes?: number }
 export interface OutlineRow { id: string; version: number; content: { sections: OutlineSection[]; openQuestions?: string[] }; approved_at: string | null }
-export interface AudioAssetRow { id: string; kind: "segment" | "full"; storage_path: string; duration_ms: number | null; created_at: string }
+export interface Chapter { title: string; start_ms: number }
+export interface AudioAssetRow {
+  id: string; kind: "segment" | "full"; storage_path: string; duration_ms: number | null; created_at: string; chapters?: Chapter[] | null;
+}
 export interface SourceRow {
   quality_tier: number;
   limitations: string | null;
@@ -38,7 +43,18 @@ export interface EpisodeDetail {
   steps: StepRow[];
 }
 
+/** Réglages fins choisis à la création (la vitesse de la voix se règle au lecteur). */
+export interface FineSettings {
+  depth: DepthLevel;
+  density: DensityLevel;
+  structure: StructureKind;
+  digressions: DigressionLevel;
+  repetition: RepetitionLevel;
+  tone: NarrationTone;
+}
+
 export interface NewEpisodeInput {
+  fine?: Partial<FineSettings>;
   topic: string;
   outputLocale: string;
   durationMinutes: number;
@@ -97,6 +113,7 @@ export async function createEpisode(sb: SupabaseClient, input: NewEpisodeInput):
       user_id: user.id,
       duration_minutes: input.durationMinutes,
       require_outline_approval: input.requireOutlineApproval,
+      ...input.fine,
     }));
     const jobId = await requestGeneration(sb, ep.id, input.idempotencyKey);
     return { episodeId: ep.id, jobId };
@@ -122,7 +139,7 @@ export async function getEpisodeDetail(sb: SupabaseClient, id: string): Promise<
   const [episode, outlines, audio, sources, steps] = await Promise.all([
     sb.from("episodes").select("id, title, topic_prompt, status, output_locale, duration_ms, created_at").eq("id", id).single<EpisodeRow>(),
     sb.from("outline_versions").select("id, version, content, approved_at").eq("episode_id", id).order("version", { ascending: false }).limit(1),
-    sb.from("audio_assets").select("id, kind, storage_path, duration_ms, created_at").eq("episode_id", id).eq("status", "ready").in("kind", ["segment", "full"]),
+    sb.from("audio_assets").select("id, kind, storage_path, duration_ms, created_at, chapters").eq("episode_id", id).eq("status", "ready").in("kind", ["segment", "full"]),
     sb.from("episode_sources").select("quality_tier, limitations, sources(title, url, doi, citation, license_code)")
       .eq("episode_id", id).eq("retained", true).order("quality_tier", { ascending: true }),
     sb.from("generation_steps").select("step_type, status").eq("episode_id", id),
@@ -185,3 +202,43 @@ export const ACTIVE_STATUSES: readonly EpisodeStatus[] = [
   "queued", "researching", "outlining", "writing", "verifying", "synthesizing", "assembling",
 ];
 export const isActive = (s: EpisodeStatus) => ACTIVE_STATUSES.includes(s);
+
+/** Fichier complet prêt, s'il existe (après l'étape de montage). */
+export function fullAsset(assets: readonly AudioAssetRow[]): AudioAssetRow | null {
+  return assets.filter((a) => a.kind === "full").sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
+}
+
+/** Index du chapitre en cours à une position donnée (-1 avant le premier). */
+export function chapterAt(chapters: readonly Chapter[], positionMs: number): number {
+  let idx = -1;
+  chapters.forEach((c, i) => { if (c.start_ms <= positionMs) idx = i; });
+  return idx;
+}
+
+export interface Progress { positionMs: number; chapterIndex: number | null; playbackRate: number; completed: boolean }
+
+export async function getProgress(sb: SupabaseClient, episodeId: string): Promise<Progress | null> {
+  const rows = check(await sb.from("listening_progress").select("position_ms, chapter_index, playback_rate, completed_at")
+    .eq("episode_id", episodeId).limit(1)) as { position_ms: number; chapter_index: number | null; playback_rate: string | number | null; completed_at: string | null }[];
+  const r = rows[0];
+  if (!r) return null;
+  return { positionMs: r.position_ms, chapterIndex: r.chapter_index, playbackRate: Number(r.playback_rate ?? 1), completed: !!r.completed_at };
+}
+
+/**
+ * Enregistre la position d'écoute. Mise à jour d'abord, insertion sinon : un upsert
+ * réécrirait aussi les clés, que l'utilisateur n'a pas le droit de modifier.
+ */
+export async function saveProgress(sb: SupabaseClient, episodeId: string, p: Progress): Promise<void> {
+  const values = {
+    position_ms: Math.max(0, Math.round(p.positionMs)),
+    chapter_index: p.chapterIndex != null && p.chapterIndex >= 0 ? p.chapterIndex : null,
+    playback_rate: Math.min(2, Math.max(0.5, p.playbackRate)),
+    completed_at: p.completed ? new Date().toISOString() : null,
+  };
+  const updated = check(await sb.from("listening_progress").update(values).eq("episode_id", episodeId).select("episode_id")) as unknown[];
+  if (updated.length > 0) return;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) throw new AppError("not_authenticated", "not_authenticated");
+  check(await sb.from("listening_progress").insert({ user_id: user.id, episode_id: episodeId, ...values }));
+}

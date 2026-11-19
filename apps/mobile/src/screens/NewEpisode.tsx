@@ -1,12 +1,13 @@
 import { randomUUID } from "expo-crypto";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Switch, Text, TextInput, View } from "react-native";
-import { createEpisode, toAppError } from "../api";
+import { createEpisode, toAppError, type FineSettings } from "../api";
+import { DEFAULT_FINE, FINE_KEYS, FINE_OPTIONS, loadLastChoices, saveLastChoices } from "../prefs";
 import { useI18n } from "../I18nContext";
 import { defaultOutputLocale, format } from "../i18n";
 import { supabase } from "../supabase";
 import { colors, font, space, TOUCH } from "../theme";
-import { Button, Card, Choice, ErrorText, H2, Title } from "../ui";
+import { Body, Button, Card, Choice, ErrorText, H2, Title } from "../ui";
 
 /** Durées proposées en V1 ; le plan « discovery » plafonne à 15 min (vérifié côté SQL). */
 export const OFFERED_DURATIONS = [5, 15] as const;
@@ -17,6 +18,17 @@ export function NewEpisode({ onCreated, onCancel }: { onCreated: (id: string) =>
   const [locale, setLocale] = useState(defaultOutputLocale(lang));
   const [minutes, setMinutes] = useState<number>(5);
   const [approval, setApproval] = useState(false);
+  const [fine, setFine] = useState<FineSettings>(DEFAULT_FINE);
+  const [showFine, setShowFine] = useState(false);
+
+  useEffect(() => {
+    void loadLastChoices().then((c) => {
+      setFine(c.fine);
+      if (c.outputLocale) setLocale(c.outputLocale);
+      if (c.durationMinutes) setMinutes(c.durationMinutes);
+      if (c.requireOutlineApproval !== undefined) setApproval(c.requireOutlineApproval);
+    });
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Même clé pour les nouvelles tentatives du même formulaire : pas de double consommation du quota.
@@ -27,8 +39,9 @@ export function NewEpisode({ onCreated, onCancel }: { onCreated: (id: string) =>
     setBusy(true); setError(null);
     try {
       const { episodeId } = await createEpisode(supabase, {
-        topic, outputLocale: locale, durationMinutes: minutes, requireOutlineApproval: approval, idempotencyKey: key.current,
+        topic, outputLocale: locale, durationMinutes: minutes, requireOutlineApproval: approval, idempotencyKey: key.current, fine,
       });
+      void saveLastChoices({ fine, outputLocale: locale, durationMinutes: minutes, requireOutlineApproval: approval });
       onCreated(episodeId);
     } catch (e) {
       setError(t.errors[toAppError(e).code]);
@@ -59,6 +72,23 @@ export function NewEpisode({ onCreated, onCancel }: { onCreated: (id: string) =>
         <Text style={styles.switchLabel}>{t.create.approval}</Text>
         <Switch accessibilityLabel={t.create.approval} value={approval} onValueChange={setApproval} trackColor={{ true: colors.accent }} />
       </View>
+      <Button kind="secondary" label={showFine ? t.fine.hide : t.fine.show} onPress={() => setShowFine(!showFine)} />
+      {showFine && (
+        <View style={styles.fine}>
+          <Body muted>{t.fine.remembered}</Body>
+          {FINE_KEYS.map((k) => (
+            <View key={k}>
+              <H2>{t.fine[k]}</H2>
+              <View style={styles.row} accessibilityRole="radiogroup">
+                {FINE_OPTIONS[k].map((v) => (
+                  <Choice key={v} label={(t.fine.values[k] as Record<string, string>)[v] ?? v} selected={fine[k] === v}
+                    onPress={() => setFine({ ...fine, [k]: v })} />
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
       {error && <ErrorText>{error}</ErrorText>}
       <Button label={t.create.submit} onPress={submit} busy={busy} />
       <Button label={t.create.cancel} kind="secondary" onPress={onCancel} />
@@ -70,5 +100,6 @@ const styles = StyleSheet.create({
   input: { minHeight: 96, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: space.m, fontSize: font.body, color: colors.text, backgroundColor: colors.bg, marginBottom: space.m, textAlignVertical: "top" },
   row: { flexDirection: "row", flexWrap: "wrap", marginBottom: space.s },
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: TOUCH, marginBottom: space.m },
+  fine: { marginTop: space.s, marginBottom: space.s },
   switchLabel: { flex: 1, fontSize: font.body, color: colors.text, marginRight: space.m },
 });
