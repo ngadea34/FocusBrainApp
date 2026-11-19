@@ -4,7 +4,7 @@ grant usage on schema tests to anon, authenticated, service_role;
 
 create or replace function tests.create_user(p_email text) returns uuid
 language sql as $$
-  insert into auth.users (email) values (p_email) returning id
+  insert into auth.users (id, email) values (gen_random_uuid(), p_email) returning id  -- Supabase n'a pas de valeur par défaut pour id
 $$;
 
 -- Bascule l'identité de la session courante, comme le ferait PostgREST.

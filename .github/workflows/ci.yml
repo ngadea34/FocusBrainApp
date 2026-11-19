@@ -41,4 +41,11 @@ jobs:
       PGPASSWORD: postgres
     steps:
       - uses: actions/checkout@v4
-      - run: bash supabase/tests/run.sh
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Assertions SQL puis tests de bout en bout du worker contre la même base
+      - run: pnpm test:db
