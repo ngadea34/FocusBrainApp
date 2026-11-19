@@ -17,6 +17,6 @@ Format : date · décision · statut (Validée / Technique réversible / En atte
 | T11 | 2026-11-19 | Profils d'écoute sans champ diagnostic ; valeurs par défaut « neutres » configurables | Conforme au dossier §3, §11 | Personnalisation sans donnée de santé |
 | T12 | 2026-11-19 | OpenAI TTS écarté | Technique | Arrêt annoncé le 6 janvier 2027 (source tierce) |
 | D3 | 2026-11-19 | Voix V1 choisie par test d'écoute à l'aveugle (Azure, Google, ElevenLabs) | Validée (Nico) | Premier poste de coût et critère central de confort ; protocole : docs/product/TEST_ECOUTE_TTS.md |
-| D3b | 2026-11-19 | Résultat du test : **Google Chirp 3 HD** en tête (moyenne 3,6/5 ; FR 3,8, EN 3,5), devant ElevenLabs 3,1, Neural2 2,4, Piper 1,9. Retenu pour la V1 sous réserve de confirmation. Débit : synthétiser à vitesse normale et laisser le lecteur accélérer (Chirp FR noté 1/5 en débit accéléré par synthèse) | À confirmer (Nico) | Un seul auditeur : à reconfirmer en bêta avec des profils variés |
+| D3b | 2026-11-19 | Résultat du test : **Google Chirp 3 HD** en tête (moyenne 3,6/5 ; FR 3,8, EN 3,5), devant ElevenLabs 3,1, Neural2 2,4, Piper 1,9. Retenu pour la V1. Débit : synthétiser à vitesse normale et laisser le lecteur accélérer (Chirp FR noté 1/5 en débit accéléré par synthèse) | Validée (Nico, 19/11) | Un seul auditeur : à reconfirmer en bêta avec des profils variés |
 | D1 | 2026-11-19 | Dépôt GitHub `ngadea34/FocusBrainApp` | Validée (Nico) | Créé par Nico |
 | D2, D4–D8 | 2026-11-19 | Voir docs/AUDIT.md §9 | En attente | Arbitrages du propriétaire |
