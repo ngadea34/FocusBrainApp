@@ -199,7 +199,7 @@ Chaque tâche n'est « terminée » qu'avec le test indiqué.
 |---|---|---|---|
 | D1 | Créer le dépôt GitHub (nom provisoire) | Dépôt privé, ex. `ngadea34/podcast-app` | Poussée du code, CI |
 | D2 | Créer le projet Supabase (région UE, offre gratuite en dev) | Francfort ou Paris (à confirmer à la création) | P1-5 |
-| D3 | Fournisseur de synthèse vocale V1 | Test d'écoute à l'aveugle FR/EN : Azure, Google, ElevenLabs (offres gratuites) | Phase 5, prix |
+| D3 | Fournisseur de synthèse vocale V1 | **Validé : test d'écoute à l'aveugle** FR/EN (Azure, Google, ElevenLabs) — protocole dans `docs/product/TEST_ECOUTE_TTS.md` | Phase 5, prix |
 | D4 | Fournisseur et localisation des modèles IA | API Anthropic directe en développement ; décider avant la bêta entre API directe et Claude via un cloud en région UE | Phase 3–4, RGPD |
 | D5 | Prestataire de paiement | RevenueCat (abstraction des deux stores) — à comparer en Phase 7 | Phase 7 |
 | D6 | Hébergeur des workers (UE) | À comparer (Scaleway, Fly.io, Render…) | Mise en ligne |

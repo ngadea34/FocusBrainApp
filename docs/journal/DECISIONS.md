@@ -16,4 +16,5 @@ Format : date · décision · statut (Validée / Technique réversible / En atte
 | T10 | 2026-11-19 | Offre `discovery` : 3 générations/mois, 15 min max, 1 simultanée, plafond 2 $/épisode | Provisoire | Protection anti-abus uniquement ; aucun prix fixé |
 | T11 | 2026-11-19 | Profils d'écoute sans champ diagnostic ; valeurs par défaut « neutres » configurables | Conforme au dossier §3, §11 | Personnalisation sans donnée de santé |
 | T12 | 2026-11-19 | OpenAI TTS écarté | Technique | Arrêt annoncé le 6 janvier 2027 (source tierce) |
-| D1–D8 | 2026-11-19 | Voir docs/AUDIT.md §9 | En attente | Arbitrages du propriétaire |
+| D3 | 2026-11-19 | Voix V1 choisie par test d'écoute à l'aveugle (Azure, Google, ElevenLabs) | Validée (Nico) | Premier poste de coût et critère central de confort ; protocole : docs/product/TEST_ECOUTE_TTS.md |
+| D1, D2, D4–D8 | 2026-11-19 | Voir docs/AUDIT.md §9 | En attente | Arbitrages du propriétaire |
