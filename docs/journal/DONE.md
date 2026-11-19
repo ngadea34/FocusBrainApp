@@ -1,0 +1,10 @@
+# Tâches terminées (avec test correspondant)
+
+| Date | Tâche | Preuve |
+|---|---|---|
+| 2026-11-19 | Audit de l'environnement et des versions | docs/AUDIT.md §1, §2, §4 |
+| 2026-11-19 | Schéma de données + RLS + Storage + file + quotas + coûts | `bash supabase/tests/run.sh` → 83 assertions, 0 échec |
+| 2026-11-19 | Contrats TypeScript alignés sur le SQL | `pnpm test` (alignement enums/transitions) |
+| 2026-11-19 | Graphe du pipeline, retry, reprise des segments, estimation des coûts | `pnpm test` → 48 tests, `pnpm typecheck` OK |
+
+Non terminé (pas encore de test) : application mobile, worker, moteurs de génération, Edge Functions, paiements, admin.
