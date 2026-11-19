@@ -177,7 +177,7 @@ Chaque tâche n'est « terminée » qu'avec le test indiqué.
 | P1-1 | Schéma, RLS, Storage, file, quotas, coûts | `supabase/tests/run.sh` : 83 assertions | ✅ |
 | P1-2 | Contrats TS alignés sur SQL | `pnpm test` : enums et transitions comparés au SQL | ✅ |
 | P1-3 | Graphe d'étapes, retry, segments, coûts | `pnpm test` : 48 tests | ✅ |
-| P1-4 | Créer le dépôt GitHub et pousser | Dépôt privé avec CI (typecheck, vitest, tests SQL) verte | ⏳ Nico |
+| P1-4 | Créer le dépôt GitHub et pousser | Dépôt `FocusBrainApp` avec CI (typecheck, vitest, tests SQL sur PostgreSQL 17) verte | ✱ PR ouverte |
 | P1-5 | Créer le projet Supabase UE, appliquer les migrations | `supabase db push` + tests rejoués sur l'instance de dev | ⏳ Nico |
 | P1-6 | Edge Function URL signée (TTL court) | Test : refus hors propriétaire, expiration | ○ |
 | P1-7 | Worker : boucle claim/heartbeat/complete/fail + fournisseurs factices | Test d'intégration bout en bout avec faux fournisseurs, reprise après crash | ○ |
@@ -197,7 +197,7 @@ Chaque tâche n'est « terminée » qu'avec le test indiqué.
 
 | # | Décision | Recommandation | Bloquant pour |
 |---|---|---|---|
-| D1 | Créer le dépôt GitHub (nom provisoire) | Dépôt privé, ex. `ngadea34/podcast-app` | Poussée du code, CI |
+| D1 | Créer le dépôt GitHub | **Fait** : `ngadea34/FocusBrainApp` (19/11/2026) | Poussée du code, CI |
 | D2 | Créer le projet Supabase (région UE, offre gratuite en dev) | Francfort ou Paris (à confirmer à la création) | P1-5 |
 | D3 | Fournisseur de synthèse vocale V1 | **Validé : test d'écoute à l'aveugle** FR/EN (Azure, Google, ElevenLabs) — protocole dans `docs/product/TEST_ECOUTE_TTS.md` | Phase 5, prix |
 | D4 | Fournisseur et localisation des modèles IA | API Anthropic directe en développement ; décider avant la bêta entre API directe et Claude via un cloud en région UE | Phase 3–4, RGPD |

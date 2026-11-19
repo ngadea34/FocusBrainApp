@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 2026-11-19 — Dépôt et CI
+- Code poussé sur `ngadea34/FocusBrainApp`. CI GitHub Actions : typecheck, Vitest, migrations + tests SQL sur PostgreSQL 17.
+- Test d'écoute : extraits FR/EN, voix open source Piper ajoutée, Azure retiré.
+
 ## 2026-11-19 — Fondations Phase 0/1
 - Création du monorepo (pnpm, TypeScript 6.0.3 strict, Vitest 5.1.1).
 - `supabase/migrations` : noyau (profils, préférences, profils d'écoute, épisodes, paramètres), contenu (sources, plans, scripts, affirmations, preuves, audio, progression, retours), offres/quotas, tâches de génération (file, bail, retry, DLQ, coûts), Storage privé et droits par colonne.

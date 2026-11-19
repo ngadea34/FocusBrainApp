@@ -17,4 +17,5 @@ Format : date · décision · statut (Validée / Technique réversible / En atte
 | T11 | 2026-11-19 | Profils d'écoute sans champ diagnostic ; valeurs par défaut « neutres » configurables | Conforme au dossier §3, §11 | Personnalisation sans donnée de santé |
 | T12 | 2026-11-19 | OpenAI TTS écarté | Technique | Arrêt annoncé le 6 janvier 2027 (source tierce) |
 | D3 | 2026-11-19 | Voix V1 choisie par test d'écoute à l'aveugle (Azure, Google, ElevenLabs) | Validée (Nico) | Premier poste de coût et critère central de confort ; protocole : docs/product/TEST_ECOUTE_TTS.md |
-| D1, D2, D4–D8 | 2026-11-19 | Voir docs/AUDIT.md §9 | En attente | Arbitrages du propriétaire |
+| D1 | 2026-11-19 | Dépôt GitHub `ngadea34/FocusBrainApp` | Validée (Nico) | Créé par Nico |
+| D2, D4–D8 | 2026-11-19 | Voir docs/AUDIT.md §9 | En attente | Arbitrages du propriétaire |
