@@ -17,5 +17,8 @@ select tests.ok(tests.count('select 1 from public.episodes') = 0, 'épisodes sup
 select tests.ok(tests.count('select 1 from public.episode_jobs') = 0 and tests.count('select 1 from public.generation_steps') = 0, 'tâches supprimées');
 select tests.ok(tests.count('select 1 from public.quota_usage') = 0, 'consommation supprimée');
 select tests.ok((select count(*) from public.cost_events where user_id is null and episode_id is null and job_id is null) = 1, 'coût conservé mais anonymisé');
-select tests.ok(tests.count('select 1 from public.storage_deletion_queue where processed_at is null') = 1, 'fichier audio mis en file de suppression');
+select tests.ok(tests.count('select 1 from public.storage_deletion_queue where processed_at is null and not is_prefix') = 1, 'fichier audio mis en file de suppression');
+select tests.ok((select count(*) from public.storage_deletion_queue
+                  where is_prefix and storage_path = (select v from ids where k='a')::text || '/') = 1,
+                'tout le dossier de l''utilisateur mis en file (fichiers orphelins compris)');
 rollback;

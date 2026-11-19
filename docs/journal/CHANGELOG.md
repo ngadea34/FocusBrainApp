@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 2026-11-19 — Suppression de compte complète
+- Migration 0006 : à la suppression d'un profil, tout le dossier `{user_id}/` du bucket est mis en file (couvre les fichiers orphelins). Appliquée au projet de dev.
+- Worker : `processStorageDeletions` vide la file (entrée marquée traitée seulement après suppression effective), `SupabaseStore` (dépôt, liste récursive, suppression) et `LocalDirStore` complété.
+- Tests : 2 de bout en bout en local (`pnpm test:db`), 2 sur le projet réel (`pnpm test:remote`), 84 assertions SQL.
+
 ## 2026-11-19 — Lien d'écoute signé
 - `supabase/tests/remote/signed-url.remote.test.ts` : 4 tests sur le projet réel (utilisateurs et fichier jetables, supprimés à la fin).
 - `pnpm test:remote <ref>` : lit les clés via l'API d'administration, sans les écrire nulle part.

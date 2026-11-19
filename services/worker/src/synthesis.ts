@@ -6,6 +6,10 @@ import { PermanentError, type StepHandler } from "./runner.js";
 export interface AudioStore {
   readonly bucket: string;
   put(path: string, bytes: Uint8Array, mimeType: string): Promise<void>;
+  /** Supprime des fichiers ; un fichier déjà absent n'est pas une erreur. */
+  remove(paths: readonly string[]): Promise<void>;
+  /** Liste récursivement les fichiers sous un dossier (chemin se terminant par /). */
+  list(prefix: string): Promise<string[]>;
 }
 
 /** Entrée d'une étape synthesize_segment, fournie par l'étape de vérification. */
