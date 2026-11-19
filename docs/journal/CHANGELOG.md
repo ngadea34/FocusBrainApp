@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 2026-11-19 — Lien d'écoute signé
+- `supabase/tests/remote/signed-url.remote.test.ts` : 4 tests sur le projet réel (utilisateurs et fichier jetables, supprimés à la fin).
+- `pnpm test:remote <ref>` : lit les clés via l'API d'administration, sans les écrire nulle part.
+- Décision T13 : pas d'Edge Function pour les liens d'écoute.
+
 ## 2026-11-19 — Projet Supabase de dev
 - Projet `nejqievnldeqiasqsdlj` (eu-north-1, PostgreSQL 17) : 5 migrations appliquées via l'API d'administration, versions alignées sur les noms de fichiers.
 - `supabase/tests/run-remote.sh` : rejoue les 3 suites SQL sur l'instance réelle, chacune dans une transaction annulée. Toutes vertes.
