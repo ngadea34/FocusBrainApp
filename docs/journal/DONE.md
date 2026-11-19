@@ -15,3 +15,4 @@
 
 Non terminé (pas encore de test) : application mobile, moteurs LLM/recherche réels, stockage Supabase du worker, moteurs de génération, Edge Functions, paiements, admin.
 | 2026-11-19 | OpenAlex actif et User-Agent avec contact | `pnpm test` → 92 tests (clé en en-tête Bearer, jamais dans l'URL ; contact mailto) ; `pnpm test:live` et `pnpm research:demo` avec OpenAlex → 8 documents par sujet |
+| 2026-11-19 | Application mobile V1 (connexion, création, bibliothèque, détail, sources, lecteur) | `pnpm test` → 11 tests app (ordre de lecture, liens signés, création, nettoyage du brouillon, FR/EN complets) ; `pnpm test:remote … apps` → 4 tests contre le vrai projet (création → `queued`, idempotence, refus 30 min, sources, lien signé lu, annulation) ; bundle Android `expo export` OK ; parcours complet dans Chromium au format Galaxy S9+ contre le vrai projet. Lecture audio réelle sur téléphone : pas encore testée (aucun épisode prêt) |
